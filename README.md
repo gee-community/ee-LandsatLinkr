@@ -17,8 +17,9 @@ Create a script folder or repository to hold your landsat linkr scripts. You wil
 
 ### Step 2. Copy the landsat linkr template script into your folder 
 Add a copy of the run_llr script to your folder (there are two ways to do this):
-	* Add the [landsat linkr repository](https://code.earthengine.google.com/?accept_repo=users/jstnbraaten/modules) to your EE account and save a copy of run_llr_template.js to your landsat linkr project folder
-	* Open the run_llr script at this [link](add the get link here) and save a copy to your landsat linkr project folder
+- Open the run_llr script at this [link](https://code.earthengine.google.com/7e4b572a6c67b535f5a4aabd9dbe3f67) and save a copy to your landsat linkr project folder
+OR
+- Add the [landsat linkr repository](https://code.earthengine.google.com/?accept_repo=users/jstnbraaten/modules) to your EE account and save a copy of run_llr_template.js to your landsat linkr project folder
 
 ### Step 3. Identity MSS WRS-1 tile ID(s)
 Determine the WRS-1 tile ID for your study area. WRS-1 tile IDs refer to the image footprints of the MSS sensor. To do this, open your copy of the run script (see above). We'll be editing this run script to run the Landsat Linkr workflow for your study area. 
