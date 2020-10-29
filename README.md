@@ -158,7 +158,7 @@ var LLR_STEP = 6;
 
 3. Once the tasks are completed and you see 11 images named for each year in the `WRS1_to_TM` asset folder, you can move onto the next step. 
 
-### Step 7. Inspect time series
+### Step 10. Inspect time series
 In the assets folder, we have a harmonized MSS collection that is ready to input into the Landtrendr algorithm in EE (add link to the EE guide here). This step collects all of the Landsat imagery from later years (ETM and OLI sensors), masks out cloudy pixels and takes the annual medoid composite. 
 
 1. Set LLR_STEP to 7 and run the script. This creates the entire Landsat image collection and saves it as a new variable `col`.
@@ -173,7 +173,7 @@ Map.addLayer(col, {}, 'Landsat Collection');
 
 3. Use the inspector to view the time series at a given point. You can check the time series chart in the Inspector window, making sure there is not a step function at or around 1984.
 
-### Step 8. Run Landtrendr on the entire time series
+### Step 11. Run Landtrendr on the entire time series
 
 1. Set LLR_STEP to 8 and run the script. This runs the LandTrendr algorithm on the entire Landsat image collection and saves it as a new variable `lt`.
 ```js
