@@ -18,6 +18,7 @@ Create a script folder or repository to hold your landsat linkr scripts. You wil
 ### Step 2. Copy the landsat linkr template script into your folder 
 Add a copy of the run_llr script to your folder (there are two ways to do this):
 - Open the run_llr script at this [link](https://code.earthengine.google.com/7e4b572a6c67b535f5a4aabd9dbe3f67) and save a copy to your landsat linkr project folder
+
 OR
 - Add the [landsat linkr repository](https://code.earthengine.google.com/?accept_repo=users/jstnbraaten/modules) to your EE account and save a copy of run_llr_template.js to your landsat linkr project folder
 
