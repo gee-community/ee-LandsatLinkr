@@ -20,6 +20,8 @@
 // Ideas for correcting sensors: https://ieeexplore.ieee.org/abstract/document/9093966
 
 var msslib = require('users/jstnbraaten/modules:msslib/msslib.js');
+var ltgee = require('users/emaprlab/public:Modules/LandTrendr.js'); 
+var animation = require('users/gena/packages:animation')
 
 
 
@@ -877,12 +879,9 @@ function getColForLandTrendrFromAsset(params) { // Relies on WRS1_to_TM assets
 exports.getColForLandTrendrFromAsset = getColForLandTrendrFromAsset;
 
 
-
-
-
-
 function runLandTrendrMss2Tm(params) {
-  var ltCol = getColForLandTrendr(params);
+  var ltCol = getColForLandTrendrFromAsset(params);
+  //var ltCol = getColForLandTrendr(params);
   var lt = ee.Algorithms.TemporalSegmentation.LandTrendr({
     timeSeries: ltCol,
     maxSegments: 10,
@@ -898,7 +897,88 @@ function runLandTrendrMss2Tm(params) {
 }
 exports.runLandTrendrMss2Tm = runLandTrendrMss2Tm;
 
+// #############################################################################
+// ### Functions under development (Annie Taylor) ###
+// #############################################################################
 
+function displayCollection(col) {
+  // I'm not sure if this should be its own function vs just add these as lines
+  var visToa = {
+    bands: ['nir', 'red', 'green'],
+    min: [1143.66, 90.6, 143.26],
+    max: [4871.34, 1367.4, 971.74],
+    gamma: [1.2, 1.2, 1.2],
+  };
+  var rgbviz = {
+    bands: ['red','green','blue'],
+    min: 250,
+    max: 2500
+  };
+  Map.centerObject(col.first(), 8);
+  //Map.addLayer(col, visToa, 'Full Landsat Collection'); 
+  Map.addLayer(col, rgbviz, 'Full Landsat Collection',false);
+}
+exports.displayCollection = displayCollection; 
+
+
+function animateCollection(col) {
+  // could add another param to let users change speed
+  var rgbviz = {
+    bands: ['red','green','blue'],
+    min: 250,
+    max: 2500
+  };
+  // Add date of image to each image as a label property?
+  // how do I get the year from these images?
+  // this breaking the script, can't even print the IC after this
+  // col = col.map(function(img) {
+  //   img = img.set({label: ee.String(img.get('system:id'))})
+  //   return img
+  // })
+  Map.centerObject(col.first(), 8);
+  // run the animation
+  animation.animate(col, {
+    vis: rgbviz,
+    timeStep: 1500,
+    maxFrames: col.size()
+  })
+}
+exports.animateCollection = animateCollection; 
+
+function displayGreatestDisturbance(lt) {
+  // define change parameters
+  var changeParams = {
+    delta:  'loss',
+    sort:   'greatest',
+    year:   {checked:true, start:1986, end:2019},
+    mag:    {checked:true, value:200,  operator:'>'},
+    dur:    {checked:true, value:4,    operator:'<'},
+    preval: {checked:true, value:300,  operator:'>'},
+    mmu:    {checked:true, value:11},
+  };
+  // add index to changeParams object
+  // this is hard coded right now bc LTndvi isn't in the IndexFlipper fn
+  // not working yet
+  changeParams.index = 'TCG';
+  var changeImg = ltgee.getChangeMap(lt, changeParams);
+  var palette = ['#9400D3', '#4B0082', '#0000FF', '#00FF00',
+                  '#FFFF00', '#FF7F00', '#FF0000'];
+  var yodVizParms = {
+    min: startYear,
+    max: endYear,
+    palette: palette
+  };
+  var magVizParms = {
+    min: 200,
+    max: 800,
+    palette: palette
+  };
+  Map.centerObject(lt, 8);
+  // display two change attributes to map
+  Map.addLayer(changeImg.select(['mag']), magVizParms, 'Magnitude of Change');
+  Map.addLayer(changeImg.select(['yod']), yodVizParms, 'Year of Detection');
+}
+exports.displayGreatestDisturbance = displayGreatestDisturbance;
 
 // #############################################################################
 // ### TM to MSS functions ###
