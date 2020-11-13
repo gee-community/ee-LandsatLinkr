@@ -74,8 +74,21 @@ switch (LLR_STEP) {
     break;
   case 7:
     var col = llr.getColForLandTrendrFromAsset(params);
+    // doesn't display the IC by default bc it slows things down so much
+    // not usually working due to memory error
+    llr.displayCollection(col);
+    // sometimes loads
+    llr.animateCollection(col);
+    // should we prompt people to go back to step 3 if some years look bad? 
     break;
-  case 8:
+  case 8: // option to display fitted LT time series as RGB
     var lt = llr.runLandTrendrMss2Tm(params);
+    //llr.displayFittedCollection() not built yet
+    break;
+  case 9: // Greatest Disturbance Map
+    var lt = llr.runLandTrendrMss2Tm(params);
+    print(lt);
+    // currently broken because of IndexFlipper limitations w/in getChangeMap() in the ltgee package
+    llr.displayGreatestDisturbance();
     break;
 }
