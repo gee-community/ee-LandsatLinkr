@@ -20,6 +20,8 @@
 // Ideas for correcting sensors: https://ieeexplore.ieee.org/abstract/document/9093966
 
 var msslib = require('users/jstnbraaten/modules:msslib/msslib.js');
+var ltgee = require('users/emaprlab/public:Modules/LandTrendr.js'); 
+var animation = require('users/gena/packages:animation');
 
 
 
@@ -877,12 +879,8 @@ function getColForLandTrendrFromAsset(params) { // Relies on WRS1_to_TM assets
 exports.getColForLandTrendrFromAsset = getColForLandTrendrFromAsset;
 
 
-
-
-
-
 function runLandTrendrMss2Tm(params) {
-  var ltCol = getColForLandTrendr(params);
+  var ltCol = getColForLandTrendrFromAsset(params); // alternative: getColForLandTrendrOnTheFly(params)
   var lt = ee.Algorithms.TemporalSegmentation.LandTrendr({
     timeSeries: ltCol,
     maxSegments: 10,
@@ -898,7 +896,79 @@ function runLandTrendrMss2Tm(params) {
 }
 exports.runLandTrendrMss2Tm = runLandTrendrMss2Tm;
 
+// #############################################################################
+// ### Functions under development (Annie Taylor) ###
+// #############################################################################
 
+function displayCollection(col) {
+  var rgbviz = {
+    bands: ['red','green','blue'],
+    min: 250,
+    max: 2500
+  };
+  Map.centerObject(col.first(), 8);
+  Map.addLayer(col, rgbviz, 'Full Landsat Collection',false);
+}
+exports.displayCollection = displayCollection; 
+
+
+function animateCollection(col) {
+  var rgbviz = {
+    bands: ['red','green','blue'],
+    min: 100,
+    max: 2000,
+    gamma: [1.2]
+  };
+  // TODO: add year of image as label in animation
+  // col = col.map(function(img) {
+  //   img = img.set({label: ee.String(img.get('system:id'))})
+  //   return img
+  // })
+  Map.centerObject(col.first(), 8);
+  // run the animation
+  animation.animate(col, {
+    vis: rgbviz,
+    timeStep: 1500,
+    maxFrames: col.size()
+  })
+}
+exports.animateCollection = animateCollection; 
+
+function displayGreatestDisturbance(lt, params) {
+  var granuleGeom = ee.Feature(msslib.getWrs1GranuleGeom(params.wrs1)
+    .get('granule')).geometry();
+  
+  var currentYear = new Date().getFullYear();  // TODO: make sure there is not a better way to get year from image metadata eg
+  var changeParams = { // TODO: allow a person to override these params
+    delta:  'loss',
+    sort:   'greatest',
+    year:   {checked:true, start:1972, end:currentYear},  // TODO: make sure there is not a better way to get years from image metadata eg
+    mag:    {checked:true, value:200,  operator:'>'},
+    dur:    {checked:true, value:4,    operator:'<'},
+    preval: {checked:true, value:300,  operator:'>'},
+    mmu:    {checked:true, value:11},
+  };
+  // Note: add index to changeParams object this is hard coded to NDVI because currently that is the only option.
+  changeParams.index = 'NDVI';
+  var changeImg = ltgee.getChangeMap(lt, changeParams);
+  var palette = ['#9400D3', '#4B0082', '#0000FF', '#00FF00',
+                  '#FFFF00', '#FF7F00', '#FF0000'];
+  var yodVizParms = {
+    min: 1972, // TODO: make sure there is not a better way to get year from image metadata eg
+    max: currentYear, // TODO: make sure there is not a better way to get year from image metadata eg
+    palette: palette
+  };
+  var magVizParms = {
+    min: 200,
+    max: 800,
+    palette: palette
+  };
+  Map.centerObject(granuleGeom, 12);  // Zoom in pretty far otherwise the mmu filter is going to take forever (probably crash)
+  // display two change attributes to map
+  Map.addLayer(changeImg.select(['mag']), magVizParms, 'Magnitude of Change');
+  Map.addLayer(changeImg.select(['yod']), yodVizParms, 'Year of Detection');
+}
+exports.displayGreatestDisturbance = displayGreatestDisturbance;
 
 // #############################################################################
 // ### TM to MSS functions ###
