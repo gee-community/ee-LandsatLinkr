@@ -10,8 +10,9 @@
  * 4. Prepare MSS WRS-1 images
  * 5. Get TM-to-MSS correction coefficients
  * 6. Export MSS-to-TM corrected images
- * 7. Inspect the full time series collection - builds col - add code lines to add col to Map and use inspector etc to explore time series
- * 8. Run LandTrendr - returns the raw output from LandTrendr - you'll need to add lines to run lt-gee functions or export e.g.
+ * 7. Inspect the full time series collection - explore time series via animation and inspector tool to check for noise
+ * 8. Run LandTrendr and display the fitted collection on the map
+ * 9. Display the year and magnitude of the greatest disturbance during the time series
  */
 
 var LLR_STEP = 1;
@@ -74,8 +75,15 @@ switch (LLR_STEP) {
     break;
   case 7:
     var col = llr.getColForLandTrendrFromAsset(params);
+    llr.displayCollection(col);
+    llr.animateCollection(col);
     break;
   case 8:
     var lt = llr.runLandTrendrMss2Tm(params);
+    //llr.displayFittedCollection() not built yet
+    break;
+  case 9:
+    var lt = llr.runLandTrendrMss2Tm(params);
+    llr.displayGreatestDisturbance(lt, params);
     break;
 }
