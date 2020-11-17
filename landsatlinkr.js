@@ -21,7 +21,7 @@
 
 var msslib = require('users/jstnbraaten/modules:msslib/msslib.js');
 var ltgee = require('users/emaprlab/public:Modules/LandTrendr.js'); 
-var animation = require('users/gena/packages:animation')
+var animation = require('users/gena/packages:animation');
 
 
 
@@ -880,8 +880,7 @@ exports.getColForLandTrendrFromAsset = getColForLandTrendrFromAsset;
 
 
 function runLandTrendrMss2Tm(params) {
-  var ltCol = getColForLandTrendrFromAsset(params);
-  //var ltCol = getColForLandTrendr(params);
+  var ltCol = getColForLandTrendrFromAsset(params); // alternative: getColForLandTrendrOnTheFly(params)
   var lt = ee.Algorithms.TemporalSegmentation.LandTrendr({
     timeSeries: ltCol,
     maxSegments: 10,
@@ -902,20 +901,12 @@ exports.runLandTrendrMss2Tm = runLandTrendrMss2Tm;
 // #############################################################################
 
 function displayCollection(col) {
-  // I'm not sure if this should be its own function vs just add these as lines
-  var visToa = {
-    bands: ['nir', 'red', 'green'],
-    min: [1143.66, 90.6, 143.26],
-    max: [4871.34, 1367.4, 971.74],
-    gamma: [1.2, 1.2, 1.2],
-  };
   var rgbviz = {
     bands: ['red','green','blue'],
     min: 250,
     max: 2500
   };
   Map.centerObject(col.first(), 8);
-  //Map.addLayer(col, visToa, 'Full Landsat Collection'); 
   Map.addLayer(col, rgbviz, 'Full Landsat Collection',false);
 }
 exports.displayCollection = displayCollection; 
@@ -925,8 +916,9 @@ function animateCollection(col) {
   // could add another param to let users change speed
   var rgbviz = {
     bands: ['red','green','blue'],
-    min: 250,
-    max: 2500
+    min: 100,
+    max: 2000,
+    gamma: [1.2]
   };
   // Add date of image to each image as a label property?
   // how do I get the year from these images?
@@ -945,27 +937,29 @@ function animateCollection(col) {
 }
 exports.animateCollection = animateCollection; 
 
-function displayGreatestDisturbance(lt) {
-  // define change parameters
-  var changeParams = {
+function displayGreatestDisturbance(lt, params) {
+  var granuleGeom = ee.Feature(msslib.getWrs1GranuleGeom(params.wrs1)
+    .get('granule')).geometry();
+  
+  var currentYear = new Date().getFullYear();  // TODO: make sure there is not a better way to get year from image metadata eg
+  var changeParams = { // TODO: allow a person to override these params
     delta:  'loss',
     sort:   'greatest',
-    year:   {checked:true, start:1986, end:2019},
+    year:   {checked:true, start:1972, end:currentYear},  // TODO: make sure there is not a better way to get years from image metadata eg
+    mag:    {checked:true, value:200,  operator:'>'},
     mag:    {checked:true, value:200,  operator:'>'},
     dur:    {checked:true, value:4,    operator:'<'},
     preval: {checked:true, value:300,  operator:'>'},
     mmu:    {checked:true, value:11},
   };
-  // add index to changeParams object
-  // this is hard coded right now bc LTndvi isn't in the IndexFlipper fn
-  // not working yet
-  changeParams.index = 'TCG';
+  // Note: add index to changeParams object this is hard coded to NDVI because currently that is the only option.
+  changeParams.index = 'NDVI';
   var changeImg = ltgee.getChangeMap(lt, changeParams);
   var palette = ['#9400D3', '#4B0082', '#0000FF', '#00FF00',
                   '#FFFF00', '#FF7F00', '#FF0000'];
   var yodVizParms = {
-    min: startYear,
-    max: endYear,
+    min: 1972, // TODO: make sure there is not a better way to get year from image metadata eg
+    max: currentYear, // TODO: make sure there is not a better way to get year from image metadata eg
     palette: palette
   };
   var magVizParms = {
@@ -973,7 +967,7 @@ function displayGreatestDisturbance(lt) {
     max: 800,
     palette: palette
   };
-  Map.centerObject(lt, 8);
+  Map.centerObject(granuleGeom, 12);  // Zoom in pretty far otherwise the mmu filter is going to take forever (probably crash)
   // display two change attributes to map
   Map.addLayer(changeImg.select(['mag']), magVizParms, 'Magnitude of Change');
   Map.addLayer(changeImg.select(['yod']), yodVizParms, 'Year of Detection');
