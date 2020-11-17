@@ -913,16 +913,13 @@ exports.displayCollection = displayCollection;
 
 
 function animateCollection(col) {
-  // could add another param to let users change speed
   var rgbviz = {
     bands: ['red','green','blue'],
     min: 100,
     max: 2000,
     gamma: [1.2]
   };
-  // Add date of image to each image as a label property?
-  // how do I get the year from these images?
-  // this breaking the script, can't even print the IC after this
+  // TODO: add year of image as label in animation
   // col = col.map(function(img) {
   //   img = img.set({label: ee.String(img.get('system:id'))})
   //   return img
@@ -946,7 +943,6 @@ function displayGreatestDisturbance(lt, params) {
     delta:  'loss',
     sort:   'greatest',
     year:   {checked:true, start:1972, end:currentYear},  // TODO: make sure there is not a better way to get years from image metadata eg
-    mag:    {checked:true, value:200,  operator:'>'},
     mag:    {checked:true, value:200,  operator:'>'},
     dur:    {checked:true, value:4,    operator:'<'},
     preval: {checked:true, value:300,  operator:'>'},
