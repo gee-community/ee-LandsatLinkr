@@ -903,8 +903,9 @@ exports.runLandTrendrMss2Tm = runLandTrendrMss2Tm;
 function displayCollection(col) {
   var rgbviz = {
     bands: ['red','green','blue'],
-    min: 250,
-    max: 2500
+    min: 100,
+    max: 2000,
+    gamma: [1.2]
   };
   Map.centerObject(col.first(), 8);
   Map.addLayer(col, rgbviz, 'Full Landsat Collection',false);
