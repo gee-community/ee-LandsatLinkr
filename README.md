@@ -137,7 +137,7 @@ var LLR_STEP = 4;
 3. Once the tasks are completed and you see 11 images named for each year in the `WRS1_to_WRS2` asset folder, you can move onto the next step. You can add these asset images to the map if you would like to check them. 
 
 ### Script Step 5. Correlate the MSS to coincident TM images
-This step builds the relationship between MSS and TM images by finding MSS and TM coincident images (Landsat 5 had both sensors) and using this overlap to build a robust linear regression to link the two sensors. The resulting table of correlation coefficients (exported as an asset) contains the slope, intercept, and RMSE for each image pair within your tile (and for each band). This step requires two tasks and takes about 45 minutes to run. 
+This step builds the relationship between MSS and TM images by finding MSS and TM coincident images (Landsat 4 had both sensors) and using this overlap to build a robust linear regression to link the two sensors. The resulting table of correlation coefficients (exported as an asset) contains the slope, intercept, and RMSE for each image pair within your tile (and for each band). This step requires two tasks and takes about 45 minutes to run. 
 
 1. Set LLR_STEP to 5 and run the script.
 ```js
