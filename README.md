@@ -1,10 +1,10 @@
 # ee-LandsatLinkr
 
-The aim of `landsatlinkr` is to make it easy to run the LandTrendr algorithm with Landsat MSS, ETM, and OLI data together in Earth Engine. It assembles image collections across the five satellites that carried the MSS sensor, filters those images for quality, calculates TOA reflectance, and calculates the MSScvm cloud mask. It also allows the user to manually exclude MSS images with scan line issues or other noise. These MSS images are converted to pseudo-TM by building a relationship between MSS and TM coincident images. These converted MSS to TM images are then grouped with TM and OLI images and run through LandTrendr to track changes over time. 
+The aim of `landsatlinkr` is to make it easy to run the LandTrendr algorithm with Landsat MSS, TM, ETM, and OLI data together in Earth Engine. It assembles image collections across the five satellites that carried the MSS sensor, filters those images for quality, calculates TOA reflectance, and calculates the MSScvm cloud mask. It also allows the user to manually exclude MSS images with scan line issues or other noise. These MSS images are converted to pseudo-TM by building a relationship between MSS and TM coincident images. These converted MSS to TM images are then grouped with TM and OLI images and run through LandTrendr to track changes over time. 
 
 ## Module import
 
-Include the following line at the top of every script to import the landsatlinkr library. This line is already included in the template script that you will work from in the next step. 
+Include the following line at the top of every script to import the landsatlinkr library. This line is already included in the template script that you will work from in this workflow. 
 
 ```js
 var llr = require('users/jstnbraaten/modules:landsatlinkr/landsatlinkr.js');
@@ -17,7 +17,7 @@ Create a script folder or repository to hold your landsat linkr scripts. You wil
 
 ### Prep Step 2. Copy the landsat linkr template script into your folder 
 Add a copy of the run_llr script to your folder (there are two ways to do this):
-- Open the run_llr script at this [link](https://code.earthengine.google.com/7e4b572a6c67b535f5a4aabd9dbe3f67) and save a copy to your landsat linkr project folder
+- Open the run_llr script at this [link](https://code.earthengine.google.com/e926ef1c0fc1001d46af363ef34559bb?noload=true) and save a copy to your landsat linkr project folder
 
 OR
 - Add the [landsat linkr repository](https://code.earthengine.google.com/?accept_repo=users/jstnbraaten/modules) to your EE account and save a copy of run_llr_template.js to your landsat linkr project folder
@@ -30,22 +30,23 @@ Determine the WRS-1 tile ID for your study area. WRS-1 tile IDs refer to the ima
 var LLR_STEP = 1;
 ```
 2. In the map, zoom to your study area and select its location to reveal the WRS-1 tile IDs at that location (this may take a minute or two to load)
-3. Copy the WRS-1 tile ID from the pop-up window. If your study area overlaps with two or more tile footprints, you should note all of the WRS-1 tile IDs and process as many tiles that intersect the study region one at a time -- the results can be composited later. For now, select one WRS-1 tile ID to begin with (you can only process one tile ID at a time).
+3. Copy the WRS-1 tile ID from the pop-up window. If your study area overlaps with two or more tile footprints, you should note all of the WRS-1 tile IDs and process as many tiles that intersect the study region one at a time – the results can be composited later. For now, select one WRS-1 tile ID to begin with (you can only process one tile ID at a time).
 4. Paste this WRS-1 tile ID into your run script as the WRS_1_GRANULE variable:
 ```js
-var WRS_1_GRANULE = '046033';
+var WRS_1_GRANULE = '049030';
 ```
 
 ### Prep Step 4. Create Asset Folders
-Create new Asset folders to store the intermediate and final processing results of the the Landsat Linkr workflow. To make this easy, we have provided a python notebook/script that creates the appropriate folders in your Earth Engine Assets tab.
+The Landsat Linkr workflow currently exports many assets to your Earth Engine account to store the intermediate and final processing results. In this step, we'll create the asset folders that are required for these exports. To make this easy, we have provided a python notebook/script that creates the appropriate folders in your Earth Engine Assets tab.
 
 1. Open the [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) and click Open in Colab to open the script as a python notebook
 2. Run the first code block to authenticate to the EE Python API (you'll be asked to open a link with your EE account and then to copy/paste the access code)
 3. Set `wrs-granule-1` to your study area's WRS-1 tile ID (same as the WRS_1_GRANULE above)
 4. Set `project_dir` to 'users/your_EE_username/LandTrendr'
 5. Run the second, third, and fourth code blocks (Set up project dirs and Create project dirs, the rest of the code isn't needed)
-6. Check your Assets tab to see that the following folders were created:
-	* users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_TM and users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_WRS2
+6. Check your Assets tab to see that the following two folders were created:
+	* users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_TM 
+	* users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_WRS2
 
 
 ## Running Landsat Linkr
@@ -64,7 +65,7 @@ var PROJ_PATH = 'users/your_EE_username/LandTrendr';
 var WRS_1_GRANULE = '046033';
 ```
 
-3. Set the CRS variable to the geographic projection that is most relevant to your study area. If you plan on calculating areas of disturbance (or other area calculations), use a projection that preserves area such as Albers equal area conic. If there are other datasets that you'll be using in combination with this Landsat analysis, consider using the CRS of those datasets. Otherwise, you can stick with the default CRS of the EE API, which is Web Mercator (EPSG:3857).
+3. Set the CRS variable to the geographic projection that is most relevant to your study area. If you plan on calculating areas of disturbance (or other area calculations), use a projection that preserves area such as Albers equal area conic. If there are other datasets that you'll be using in combination with this Landsat analysis, consider using the CRS of those datasets. Otherwise, you can stick with the default CRS of the Earth Engine API, which is Web Mercator (EPSG:3857).
 ```js
 var CRS = 'EPSG:3857';
 ```
@@ -90,7 +91,7 @@ var MAX_GEOM_RMSE = 0.5;
 ```js
 var LLR_STEP = 2;
 ```
-8. Once it appears, run the task `MSS-reference-image` (don't change the export settings). This should take about 15 minutes. Once the task is completed and you see an image called 'ref' in your project's asset folder, you can move onto the next step. 
+8. Once it appears in your Tasks Tab, run the task `MSS-reference-image` – don't change the export settings. This should take about 15 minutes. Once the task is completed and you see an image called 'ref' in your project's asset folder, you can move onto the next step. 
 
 ### Script Step 3. Preview and filter out bad MSS images
 This step will print thumbnails of all of the available MSS images based on your parameters so that you can assess image quality and remove the bad images from your image collection. This step will result in an updated `EXCLUDE_IDs` variable, and can take between 10 to 30 minutes (depending on the number of images available).
@@ -100,7 +101,7 @@ This step will print thumbnails of all of the available MSS images based on your
 var LLR_STEP = 3;
 ```
 
-2. Once the image thumbnails have loaded in the console, you'll need to inspect them for issues so that you can exclude bad images from your final collection. A bad image is one with:
+2. Once the image thumbnails have loaded in the Console Tab, you'll need to inspect them for issues so that you can exclude bad images from your final collection. A bad image is one with:
 - lots of discolored lines
 - lines that are shifted
 - thin clouds and haze
@@ -110,7 +111,7 @@ Landsat Linkr can fix (minimize/reduce to tolerable errors):
 - a few discolored lines
 - thick clouds
 
-When you find a bad image, copy it's image ID (printed just above the thumbnail) and paste it as an element in the list variable `EXCLUDE_IDS`. Image IDs should be listed as strings (in quotes) and separated by a comma. Replace any existing image IDs from the example script. 
+When you find a bad image, copy it's image ID (printed just above the thumbnail) and paste it as an element in the list variable `EXCLUDE_IDS`. Image IDs should be listed as strings (in quotes) and separated by a comma. The template script may have some image IDs pre-populated – be sure to delete these. 
 
 ```js
 var EXCLUDE_IDS = [
