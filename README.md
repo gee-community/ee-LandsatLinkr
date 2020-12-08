@@ -36,7 +36,7 @@ var LLR_STEP = 1;
 var WRS_1_GRANULE = '049030';
 ```
 
-### Prep Step 4. Create Asset Folders
+### Prep Step 3. Create Asset Folders
 The Landsat Linkr workflow currently exports many assets to your Earth Engine account to store the intermediate and final processing results. In this step, we'll create the asset folders that are required for these exports. To make this easy, we have provided a python notebook/script that creates the appropriate folders in your Earth Engine Assets tab.
 
 1. Open the [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) and click Open in Colab to open the script as a python notebook
@@ -175,6 +175,19 @@ Map.addLayer(col, {}, 'Landsat Collection');
 ```
 
 3. Use the inspector to view the time series at a given point. You can check the time series chart in the Inspector window, making sure there is not a step function at or around 1984.
+
+4. If you discover unexpected issues with the data for certain years or see any of the issues detailed below (coming soon), return to Script Step 3 and try to identify the image(s) causing the problem and add their IDs to the list of images to exclude of the relevant year(s). If you find images to newly exclude, you will need to re-run Script Steps 4 through 7. Prior to re-running these steps, you'll need to delete the existing image assets for this WRS-1 tile ID. This [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) (also linked earlier) has some code to automate deletion from the appropriate asset folders; follow the steps below. 
+
+    1. Open the [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) and click Open in Colab to open the script as a python notebook
+    2. Run the first code block to authenticate to the EE Python API (you'll be asked to open a link with your EE account and then to copy/paste the access code)
+    3. Set `wrs-granule-1` to your study area's WRS-1 tile ID (same as the WRS_1_GRANULE variable in your EE script)
+    4. Set `project_dir` to 'users/your_EE_username/LandTrendr'
+    5. Run the second and third code blocks
+    6. Run the code blocks titled 'Remove MSS WRS-1 to WRS-2 images' and 'Remove MSS WRS-1 to TM images'
+    7. Check your Assets tab to see that the following folders are empty:
+        * users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_TM 
+        * users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_WRS2
+        * users/your_EE_username/LandTrendr/your_WRS_tile_ID/ (empty except for the 'ref' image and the folders listed above) 
 
 ### Script Step 8. Run Landtrendr on the entire time series
 
