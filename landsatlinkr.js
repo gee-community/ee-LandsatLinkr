@@ -169,7 +169,7 @@ exports.viewWrs1Col = viewWrs1Col;
  */
 function wrs1GranuleSelector() {
   var wrs1Granules = ee.FeatureCollection('users/jstnbraaten/wrs/wrs1_descending_land');
-  Map.addLayer(wrs1Granules, {color: 'grey'}, null, null, 0.5);
+  Map.addLayer(wrs1Granules, {color: 'grey'}, 'WRS-1 Granules', null, 0.5);
   
   var message = ui.Label({value: 'Click granules to print ID. Wait patiently after clicking. Repeat as needed.',
     style: {position: 'top-center'}});
@@ -900,6 +900,74 @@ exports.runLandTrendrMss2Tm = runLandTrendrMss2Tm;
 // ### Functions under development (Annie Taylor) ###
 // #############################################################################
 
+function viewThumbnailsByYear(col, params) {
+  print('Please wait patiently, images may not load immediately');
+  var _params = {
+    unit: 'toa',
+    display: 'nir|red|green',
+    visParams: null
+  };
+  if (params) {
+    for (var param in params) {
+      _params[param] = params[param] || _params[param];
+    }
+  }
+  var settings = {
+    unit: {
+      dn: function(img) {return img},
+      rad: msslib.calcRad,
+      toa: msslib.calcToa
+    },
+    display: {
+      'nir|red|green': {
+        dn: msslib.visDn,
+        rad: msslib.visRad,
+        toa: msslib.visToa  
+      },
+      'ndvi': {
+        dn: msslib.visNdvi,
+        rad: msslib.visNdvi,
+        toa: msslib.visNdvi
+      }
+    }
+  };
+  var imgList = col.sort('system:time_start').toList(col.size());
+  print(imgList);
+  imgList.evaluate(function(imgList) {
+    for (var i = 0; i < imgList.length; i++) {
+      var id = imgList[i].id;
+      var img = ee.Image(id).rename(['green', 'red', 'red_edge', 'nir', 'BQA']);
+      img = settings.unit[_params.unit](img);
+      if(_params.display == 'ndvi') {
+        img = msslib.addNdvi(img);
+      }
+      var visParams = settings.display[_params.display][_params.unit];
+      if(_params.visParams) {
+        visParams = _params.visParams;
+      }
+      var imgVis = img.visualize(visParams);
+      var year = id.slice(-8,-4);
+      var date = img.get('DATE_ACQUIRED');
+      print('Image Year:', year, ' Scene ID: ', img.get('LANDSAT_SCENE_ID'));
+      print(ui.Thumbnail(imgVis, {
+        dimensions: 512,
+        crs: 'EPSG:3857',
+      }));
+    }
+  });    
+}
+exports.viewThumbnailsByYear = viewThumbnailsByYear;
+function viewWrs1ColByYear(params) {
+  print('Displaying WRS-1 images to the console');
+  var granuleGeom = msslib.getWrs1GranuleGeom(params.wrs1);
+  params.aoi = ee.Geometry(granuleGeom.get('centroid'));
+  params.wrs = '1';
+  var mssDnCol = msslib.getCol(params)
+    .filter(ee.Filter.eq('pr', params.wrs1));
+  viewThumbnailsByYear(mssDnCol);
+}
+exports.viewWrs1ColByYear = viewWrs1ColByYear;
+
 function displayCollection(col) {
   var rgbviz = {
     bands: ['red','green','blue'],
@@ -907,8 +975,8 @@ function displayCollection(col) {
     max: 2000,
     gamma: [1.2]
   };
-  Map.centerObject(col.first(), 8);
-  Map.addLayer(col, rgbviz, 'Full Landsat Collection',false);
+  Map.centerObject(col.first(), 13);
+  Map.addLayer(col, rgbviz, 'Full Landsat Collection');
 }
 exports.displayCollection = displayCollection; 
 
@@ -925,7 +993,7 @@ function animateCollection(col) {
   //   img = img.set({label: ee.String(img.get('system:id'))})
   //   return img
   // })
-  Map.centerObject(col.first(), 8);
+  Map.centerObject(col.first(), 13);
   // run the animation
   animation.animate(col, {
     vis: rgbviz,
@@ -934,6 +1002,45 @@ function animateCollection(col) {
   })
 }
 exports.animateCollection = animateCollection; 
+
+var getFittedDataLLR = function(lt, startYear, endYear, index, ftv){
+  var bandNames = ltgee.getYearBandNames(startYear, endYear);
+  var search;
+  if(ftv === true){
+    search = index.toLowerCase()+'_fit'; //necessary change is here
+  } else {
+    search = 'ftv_'+index.toLowerCase()+'_fit';
+  }
+  return lt.select(search)
+           .arrayFlatten([bandNames]);
+};
+
+function exportLtResult(params) { //TODO: fix image array export
+  var lt = runLandTrendrMss2Tm(params);
+  var granuleGeom = msslib.getWrs1GranuleGeom(params.wrs1);
+  Export.image.toAsset({
+    image: lt,
+    description: 'LtResult',
+    assetId: params.baseDir + '/LT_Result',
+    region: ee.Feature(granuleGeom.get('granule')).geometry(),
+    scale: 60,
+    crs: params.crs
+  });
+}
+exports.exportLtResult = exportLtResult;
+
+function displayFittedCollection(lt, params) {
+  //var lt = params.baseDir + '/LT_Result' // fix this if able to export ltresult
+  var granuleGeom = ee.Feature(msslib.getWrs1GranuleGeom(params.wrs1)
+    .get('granule')).geometry();
+  Map.centerObject(granuleGeom, 12);
+  // get NDVI fitted value for each year as bands
+  var ndviFTV = getFittedDataLLR(lt, 1972, 2020, 'NDVI', true);
+  Map.addLayer(ndviFTV, {bands: ['1972', '1996', '2020'], min: 300, max: 900}, 'LandTrendr Fitted Result');
+  //TODO: add legend or explanation of image's colors
+  print('Use the Inspector tool to see the fitted NDVI values over time.');
+}
+exports.displayFittedCollection = displayFittedCollection;
 
 function displayGreatestDisturbance(lt, params) {
   var granuleGeom = ee.Feature(msslib.getWrs1GranuleGeom(params.wrs1)
@@ -964,10 +1071,13 @@ function displayGreatestDisturbance(lt, params) {
     max: 800,
     palette: palette
   };
-  Map.centerObject(granuleGeom, 12);  // Zoom in pretty far otherwise the mmu filter is going to take forever (probably crash)
+  Map.centerObject(granuleGeom, 12);  // Zoom in pretty far otherwise the mmu filter is going to take forever
   // display two change attributes to map
   Map.addLayer(changeImg.select(['mag']), magVizParms, 'Magnitude of Change');
   Map.addLayer(changeImg.select(['yod']), yodVizParms, 'Year of Detection');
+  print('Layers show the year and magnitude of the greatest disturbance');
+  //TODO: add legend for magnitude or year or both (AT has scripts for this)
+
 }
 exports.displayGreatestDisturbance = displayGreatestDisturbance;
 
