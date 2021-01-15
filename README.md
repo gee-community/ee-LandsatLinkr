@@ -13,7 +13,7 @@ var llr = require('users/jstnbraaten/modules:landsatlinkr/landsatlinkr.js');
 ## Pre-Processing Steps
 
 ### Prep Step 1. Create a script folder 
-Create a script folder or repository to hold your landsat linkr scripts. You will ultimately create a different script for each WRS-1 tile footprint that you work with, so it is helpful to have one folder where all of your landsat linkr scripts are stored. Yours might look like this: `users/user_name/LLR_Projects`. 
+Create a script folder or repository to hold your Landsat Linkr scripts. You will ultimately create a different script for each WRS-1 tile footprint that you work with, so it is helpful to have one folder where all of your landsat linkr scripts are stored. Yours might look like this: `users/user_name/LLR_Projects`. 
 
 ### Prep Step 2. Copy the landsat linkr template script into your folder 
 Add a copy of the run_llr script to your folder (there are two ways to do this):
@@ -23,14 +23,14 @@ OR
 - Add the [landsat linkr repository](https://code.earthengine.google.com/?accept_repo=users/jstnbraaten/modules) to your EE account and save a copy of run_llr_template.js to your landsat linkr project folder
 
 ### Script Step 1. Identity MSS WRS-1 tile ID(s)
-Determine the WRS-1 tile ID for your study area. WRS-1 tile IDs refer to the image footprints of the MSS sensor. To do this, open your copy of the run script (see above). We'll be editing this run script to run the Landsat Linkr workflow for your study area. 
+Determine the WRS-1 tile ID for your study area. WRS-1 tile IDs refer to the image footprints of the MSS sensor. To do this, open your copy of the run script (see above). We'll be editing this run script to run the Landsat Linkr workflow in your study area. 
 
 1. In the run script, set LLR_STEP to 1 and run the script:
 ```js
 var LLR_STEP = 1;
 ```
-2. In the map, zoom to your study area and select its location to reveal the WRS-1 tile IDs at that location (this may take a minute or two to load)
-3. Copy the WRS-1 tile ID from the pop-up window. If your study area overlaps with two or more tile footprints, you should note all of the WRS-1 tile IDs and process as many tiles that intersect the study region one at a time – the results can be composited later. For now, select one WRS-1 tile ID to begin with (you can only process one tile ID at a time).
+2. In the map, zoom to your study area and use the inspector to reveal the WRS-1 tile IDs at that location (this may take a minute or two to load)
+3. Copy the WRS-1 tile ID from the pop-up window. If your study area overlaps with two or more tile footprints, you should note all of the WRS-1 tile IDs and process each tile that intersects your study region one at a time – the results can be composited later. For now, select one WRS-1 tile ID to begin with (you can only process one tile ID at a time).
 4. Paste this WRS-1 tile ID into your run script as the WRS_1_GRANULE variable:
 ```js
 var WRS_1_GRANULE = '049030';
@@ -39,21 +39,22 @@ var WRS_1_GRANULE = '049030';
 ### Prep Step 3. Create Asset Folders
 The Landsat Linkr workflow currently exports many assets to your Earth Engine account to store the intermediate and final processing results. In this step, we'll create the asset folders that are required for these exports. To make this easy, we have provided a python notebook/script that creates the appropriate folders in your Earth Engine Assets tab.
 
-1. Open the [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) and click Open in Colab to open the script as a python notebook
-2. Run the first code block to authenticate to the EE Python API (you'll be asked to open a link with your EE account and then to copy/paste the access code)
-3. Set `wrs-granule-1` to your study area's WRS-1 tile ID (same as the WRS_1_GRANULE above)
-4. Set `project_dir` to 'users/your_EE_username/LandTrendr'
-5. Run the second, third, and fourth code blocks (Set up project dirs and Create project dirs, the rest of the code isn't needed)
+1. Open the [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) and click Open in Colab to open the script as a python notebook.
+2. Run the first code block to authenticate to the EE Python API (you'll be asked to open a link with your EE account and then to copy/paste the access code).
+3. Set `wrs-granule-1` to your study area's WRS-1 tile ID (same as the WRS_1_GRANULE above).
+4. Set `project_dir` to 'users/your_EE_username/LandTrendr'.
+5. Run the second, third, and fourth code blocks (Set up project dirs and Create project dirs, the rest of the code isn't needed in this step).
 6. Check your Assets tab to see that the following two folders were created:
 	* users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_TM 
 	* users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_WRS2
+7. Close the LandsatLinkr Asset Manager Script.
 
 
 ## Running Landsat Linkr
 Now that you have your script and asset folders set up, we can get started with the Landsat Linkr workflow.  
 
 ### Script Step 2. MSS WRS-1 reference image
-Create an MSS WRS-1 reference image for MSS WRS1 to MSS WRS2 harmonization. This reference image will be used for spectral normalization, as some of the sensors are inconsistent. This step will create a image 'ref' in your project's asset folder, and should take about 15 minutes.
+Create an MSS WRS-1 reference image for MSS WRS1 to MSS WRS2 harmonization. This reference image will be used for spectral normalization, as some of the sensors are inconsistent. This step will create an image called 'ref' in your project's asset folder, and should take about 15 minutes.
 
 1. Set the PROJ_PATH variable to the asset folder that you created.
 ```js
@@ -94,7 +95,7 @@ var LLR_STEP = 2;
 8. Once it appears in your Tasks Tab, run the task `MSS-reference-image` – don't change the export settings. This should take about 15 minutes. Once the task is completed and you see an image called 'ref' in your project's asset folder, you can move onto the next step. 
 
 ### Script Step 3. Preview and filter out bad MSS images
-This step will print thumbnails of all of the available MSS images based on your parameters so that you can assess image quality and remove the bad images from your image collection. This step will result in an updated `EXCLUDE_IDs` variable, and can take between 10 to 30 minutes (depending on the number of images available).
+This step will print thumbnails of all of the available MSS images based on your parameters so that you can assess image quality and remove the bad images from your image collection. This step will result in an updated `EXCLUDE_IDs` variable, and can take between 10 to 30 minutes (depending on the number of MSS images that meet your parameters).
 
 1. Set LLR_STEP to 3 and run the script.
 ```js
@@ -121,9 +122,9 @@ var EXCLUDE_IDS = [
  ]; 
 ```
 
-If there are one or two good images for a year near the target date, it is recommended that you discard any images from the same year that are only marginally good (images with more clouds, thin clouds, a few discolored lines, etc). If there are no really good images for a given year, you can include all of the marginally good ones (Landsat Linkr attempts to mask discolored lines and clouds and uses an intra-annual medoid reduction to identify the best pixel).
+The display includes each image's ID and year. If there are one or two good images for a year near the target date, it is recommended that you discard any images from the same year that are only marginally good (images with more clouds, thin clouds, a few discolored lines, etc). If there are no really good images for a given year, you can include all of the marginally good ones (Landsat Linkr attempts to mask discolored lines and clouds and uses an intra-annual medoid reduction to identify the best pixel).
 
-This step can take some time, particularly if you have included most or all of each year (see DOY_RANGE above). Once you have previewed all of the MSS images and filtered out the bad ones (by copy/pasting those image IDs to the EXCLUDE_IDs variable), you can move onto the next step. 
+This step can take some time, particularly if you have included most or all of each year (see DOY_RANGE above). Once you have previewed all of the MSS images and filtered out the bad ones (by copy/pasting those image IDs to the EXCLUDE_IDs variable), you can move onto the next step. Note that you may have to return to this step to exclude more images if your final results aren't satisfactory. 
 
 ### Script Step 4. Prepare WRS-1 images
 This step will correct each included MSS image to the reference image `ref` that you created earlier. After running this step, all of the selected MSS imagery will be harmonized within the MSS time series. This step exports annual composite images that are based on the best pixel for each year, and adds these annual composites to the WRS1 to WRS2 asset folder that you created earlier. This step takes about one hour to run. 
@@ -133,21 +134,21 @@ This step will correct each included MSS image to the reference image `ref` that
 var LLR_STEP = 4;
 ```
 
-2. This step will create 11 tasks in the EE Task tab, one for each year of analysis. Once they appear, run each task using the default settings. This should take about an hour. 
+2. This step will create 11 tasks in the EE Task tab, one for each year of MSS imagery. Once they appear, run each task using the default export settings. This should take about an hour. 
 
-3. Once the tasks are completed and you see 11 images named for each year in the `WRS1_to_WRS2` asset folder, you can move onto the next step. You can add these asset images to the map if you would like to check them. 
+3. Once the tasks are completed and you see 11 images named for each year in the `WRS1_to_WRS2` asset folder, you can move onto the next step. You can add these asset images to the map if you would like to view them. 
 
 ### Script Step 5. Correlate the MSS to coincident TM images
-This step builds the relationship between MSS and TM images by finding MSS and TM coincident images (Landsat 4 had both sensors) and using this overlap to build a robust linear regression to link the two sensors. The resulting table of correlation coefficients (exported as an asset) contains the slope, intercept, and RMSE for each image pair within your tile (and for each band). This step requires two tasks and takes about 45 minutes to run. 
+This step builds the relationship between MSS and TM images by finding MSS and TM coincident images (Landsat 4 carried both sensors) and using this overlap to build a robust linear regression to link the two sensors. The resulting table of correlation coefficients (exported as an asset) contains the slope, intercept, and RMSE for each image pair within your tile footprint (and for each band). This step requires two tasks and takes about 45 minutes to run. 
 
 1. Set LLR_STEP to 5 and run the script.
 ```js
 var LLR_STEP = 5;
 ```
 
-2. This step will create two tasks in the EE Task tab, one for to generate correlation coefficients `mss2TmCoefCol` and one to generate an offset image `medianOffset`. Once they appear, run each task using the default settings. This should take about 45 minutes.
+2. This step will create two tasks in the EE Task tab, one to generate correlation coefficients `mss2TmCoefCol` and one to generate an offset image `medianOffset`. Once they appear, run each task using the default export settings. This should take about 45 minutes.
 
-3. Once the tasks are completed and you see two new assets in your project's asset folder (mss2TmCoefCol and mss_offset), you can move onto the next step.
+3. Once the tasks are completed and you see two new assets in your project's asset folder (`mss2TmCoefCol` and `mss_offset`), you can move onto the next step.
 
 ### Script Step 6. Harmonize MSS images to TM and export the corrected images
 This step harmonizes the WRS-1 MSS images to the TM time series using the coefficients calculated in the previous step. Note that Landsat Linkr doesn't harmonize the WRS-2 Landsat 4 and 5 images at all because there are coincident TM images which are preferred (except for 1993 when there are few TM images). This step should take a little over an hour to run. 
@@ -157,26 +158,31 @@ This step harmonizes the WRS-1 MSS images to the TM time series using the coeffi
 var LLR_STEP = 6;
 ```
 
-2. This step will create 11 tasks in the EE Task tab, one for each year of analysis. Once they appear, run each task using the default settings. This should take about an hour or longer. 
+2. This step will create 11 tasks in the EE Task tab, one for each year of MSS imagery. Once they appear, run each task using the default export settings. This should take about an hour or longer. 
 
 3. Once the tasks are completed and you see 11 images named for each year in the `WRS1_to_TM` asset folder, you can move onto the next step. 
 
 ### Script Step 7. Inspect time series
-In the assets folder, we have a harmonized MSS collection that is ready to input into the Landtrendr algorithm in EE (add link to the EE guide here). This step collects all of the Landsat imagery from later years (ETM and OLI sensors), masks out cloudy pixels and takes the annual medoid composite. 
+In your assets folder, you now have a harmonized MSS collection that is ready to input into the [Landtrendr algorithm in EE](https://emapr.github.io/LT-GEE/). This step collects all of the Landsat imagery from later years (captured by the ETM and OLI sensors), masks out cloudy pixels, and takes the annual medoid composite. 
 
-1. Set LLR_STEP to 7 and run the script. This creates the entire Landsat image collection and saves it as a new variable `col`.
+1. Set LLR_STEP to 7 and run the script. This creates the entire Landsat image collection, saves it as a new variable `col`, and adds it to the map for inspection.
 ```js
 var LLR_STEP = 7;
 ```
 
-2. Add the image collection to the map using the example code below and run the script. 
+2. Use the inspector tool to print the entire Landsat Linkr time series at a given point. You can view the time series chart in the Inspector window, making sure there is not a step function at or around 1984.
+
+3. After spot checking a few points, you may find it useful to view an animation of the full time series. To do this, comment the second line and uncomment the third line of code under `case: 7`. Your code should look like this: 
 ```js
-Map.addLayer(col, {}, 'Landsat Collection');
+case 7:
+    var col = llr.getColForLandTrendrFromAsset(params);
+    //llr.displayCollection(col); 
+    llr.animateCollection(col);
 ```
 
-3. Use the inspector to view the time series at a given point. You can check the time series chart in the Inspector window, making sure there is not a step function at or around 1984.
+4. Run the script again with `LLR_STEP` still set to 7. The animation will take a few minutes to load. Once the animation has loaded, press the play button and visually inspect a few areas of your study region to check for issues in the 48 year time series. 
 
-4. If you discover unexpected issues with the data for certain years or see any of the issues detailed below (coming soon), return to Script Step 3 and try to identify the image(s) causing the problem and add their IDs to the list of images to exclude of the relevant year(s). If you find images to newly exclude, you will need to re-run Script Steps 4 through 7. Prior to re-running these steps, you'll need to delete the existing image assets for this WRS-1 tile ID. This [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) (also linked earlier) has some code to automate deletion from the appropriate asset folders; follow the steps below. 
+5. If you discover unexpected issues with the data for certain years or see any of the issues detailed below (coming soon), return to Script Step 3 and try to identify the image(s) causing the problem and add their IDs to the list of images to exclude for the relevant year(s). If you find additional images to newly exclude, you will need to re-run Script Steps 4 through 7. Prior to re-running these steps, you'll need to delete the existing image assets for this WRS-1 tile ID. This [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) (the same script you used earlier to create asset folders in Prep Step 3) has some code to automate this deletion from the appropriate asset folders. If you need to re-run Script Steps 4 through 7 with a new set of MSS images, follow the steps below. 
 
     1. Open the [LandsatLinkr Asset Manager Script](https://gist.github.com/jdbcode/36f5a04329d5d85c43c0408176c51e6d) and click Open in Colab to open the script as a python notebook
     2. Run the first code block to authenticate to the EE Python API (you'll be asked to open a link with your EE account and then to copy/paste the access code)
@@ -184,26 +190,32 @@ Map.addLayer(col, {}, 'Landsat Collection');
     4. Set `project_dir` to 'users/your_EE_username/LandTrendr'
     5. Run the second and third code blocks
     6. Run the code blocks titled 'Remove MSS WRS-1 to WRS-2 images' and 'Remove MSS WRS-1 to TM images'
-    7. Check your Assets tab to see that the following folders are empty:
+    7. Check your Assets tab to ensure that the following folders are empty:
         * users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_TM 
         * users/your_EE_username/LandTrendr/your_WRS_tile_ID/WRS1_to_WRS2
         * users/your_EE_username/LandTrendr/your_WRS_tile_ID/ (empty except for the 'ref' image and the folders listed above) 
 
-### Script Step 8. Run Landtrendr on the entire time series
+### Script Step 8. Run LandTrendr and display the fitted NDVI trend
+This step runs the [LandTrendr algorithm](https://emapr.github.io/LT-GEE/) on the NDVI band of the entire time series and displays an RGB image of the fitted NDVI trend to the map. 
 
-1. Set LLR_STEP to 8 and run the script. This runs the LandTrendr algorithm on the entire Landsat image collection and saves it as a new variable `lt`.
+1. Set LLR_STEP to 8 and run the script. This will save the LandTrendr result as a new variable `lt` and adds a view of the resulting fitted NDVI trend to the map for visualization (this layer is called 'LandTrendr Fitted Result'). 
 ```js
 var LLR_STEP = 8;
 ```
+2. Use the inspector tool to view the fitted NDVI trend at a given point in your study area. In this image, red corresponds to the fitted NDVI value in 1972, blue corresponds to the fitted NDVI value in 1996, and green corresponds to the fitted NDVI value in 2020. If you would like, you can change the years that are displayed by changing the layer's visualizations settings: select the cog symbol next to the layer name and use the drop down menus to change the year assigned to each band channel.
 
-2. This will add the LandTrendr result to the map.
+### Script Step 9. Display the year and magnitude of the greatest disturbance
+This step runs the [LandTrendr algorithm](https://emapr.github.io/LT-GEE/) on the NDVI band of the entire time series and calculates the year and magnitude of the greatest disturbance at each point during the full time series.
 
-### Script Step 9. Display greatest disturbance map
-
-1. Set LLR_STEP to 9 and run the script.  
+1. Set LLR_STEP to 9 and run the script. This will (also) save the LandTrendr result as a new variable `lt` and then runs the function displayGreatestDisturbance() on this result to produce two layers: 
+- Year of Detection (the year of the greatest decrease in NDVI/disturbance, displayed with a rainbow color ramp: 1972 in purple, 2020 in red)
+- Magnitude of Change (change in NDVI of the greatest decrease/disturbance, scaled by 100, also displayed in rainbow with lower values in purple and greater values in red)
 ```js
 var LLR_STEP = 9;
 ```
-2. This runs the LandTrendr algorithm on the entire Landsat image collection and saves it as a new variable `lt`. It then runs displayGreatestDisturbance() on this result to produce two layers: 
-- Magnitude of greatest disturbance (change in NDVI scaled by 100)
-- Year of greatest disturbance (rainbow color ramp: 1972 in purple, 2020 in red)
+
+2. Use the inspector tool to view the year and magnitude of the greatest disturbance in NDVI at a given point. 
+
+### Using the MSS assets beyond this workflow
+
+### Feedback
