@@ -586,7 +586,8 @@ function getCoincidentTmMssCol(params) {
   var mssCol = msslib.getCol({
     aoi: aoi,
     wrs: '2',
-    doyRange: params.doyRange
+    doyRange: params.doyRange,
+    excludeIds: params.excludeIds
   })
   .map(addTmToMssJoinId);
   
