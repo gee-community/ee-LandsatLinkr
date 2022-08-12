@@ -1246,7 +1246,7 @@ def exportLt(params):
     granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     geom = ee.Feature(granuleGeom.get('granule')).geometry()
 
-    tasks = []
+    # tasks = []
     # for band in params['ltParams']['ftvBands']:
     #   print(getPaths(params['projectDir'], params['wrs1'])['fit_collection']+ '/' + band + '_fit')
     #   ftv_img = lt.select([band + '_fit']).arrayFlatten([yearsStr]).toShort().set('band', band)
@@ -1286,9 +1286,9 @@ def exportLt(params):
         'shardSize': 64
     })
     task.start()
-    tasks.append(task)
+    # tasks.append(task)
 
-    return tasks
+    return task
 
 
 
