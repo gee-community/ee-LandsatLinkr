@@ -1291,7 +1291,7 @@ def exportLt(params):
         'description': 'landtrendr',
         'assetId': params['baseDir'] + '/landtrendr',
         'region': geom,
-        'scale': params['ltParams']['scale],
+        'scale': params['ltParams']['scale'],
         'crs': params['crs'],
         'maxPixels': 1e13,
         'shardSize': 64
