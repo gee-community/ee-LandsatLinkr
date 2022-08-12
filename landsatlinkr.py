@@ -1294,7 +1294,7 @@ def exportLt(params):
         'scale': params['ltParams']['scale'],
         'crs': params['crs'],
         'maxPixels': 1e13,
-        'shardSize': 64
+        'shardSize': 32
     })
     task.start()
     # tasks.append(task)
