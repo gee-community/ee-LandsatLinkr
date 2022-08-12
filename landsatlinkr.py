@@ -7,6 +7,7 @@ import pprint
 from IPython.display import Image
 import subprocess
 import sys
+import ee
 
 from traitlets.traitlets import default
 def getPr(img):
