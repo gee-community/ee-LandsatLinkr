@@ -586,7 +586,7 @@ def getRefImg(params):
         .set('bounds', bounds)
 
 def exportMssRefImg(params):
-    print('Preparing reference image export task, please wait')
+    print('Exporting MSS 2nd Gen reference image, please wait.')
     refImg = getRefImg(params)
     task = ee.batch.Export.image.toAsset(**{
         'image': refImg,
@@ -790,6 +790,7 @@ def scaleMssToInt16(img):
 # 1983 is MSS WRS2, it is not made to match the reference image
 # The export is a single image with bands for each image labeled by year and band name
 def processMssWrs1Imgs(params):
+    print('Exporting annual MSS composites that match the MSS 2nd Gen reference image, please wait.')
     granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     geom = ee.Feature(granuleGeom.get('granule')).geometry()
     params['aoi'] = ee.Geometry(granuleGeom.get('centroid'))
@@ -1029,6 +1030,7 @@ def getMsstoTmStratSamp(img):
 # sample in a random forest regression classifier. The sample is stratified on MSS
 # TCA from 8(?) percentile bins. 
 def exportMss2TmCoefCol(params):
+    print('Exporting MSS-to-TM model training sample, please wait.')
     col = getCoincidentTmMssCol(params)
     sample = col.map(getMsstoTmStratSamp).flatten()
     task = ee.batch.Export.table.toAsset(**{
@@ -1086,6 +1088,7 @@ def getFinalCorrectedMssCol(imgStackPath):
 
 
 def exportFinalCorrectedMssCol(params):
+    print('Exporting annual MSS composites that match TM, please wait.')
     mssCol = mssStackToCol(params['baseDir'] + '/MSS_WRS1_to_WRS2_stack')
     outImg = appendIdToBandnames(mssCol
                                  .map(_correctMssImg)
@@ -1232,7 +1235,7 @@ def runLt(params):  #exportTmComposites(params):
 
 
     # col = col.map(add_systime)
-    print('dates', col.aggregate_array('date').getInfo())
+    # print('dates', col.aggregate_array('date').getInfo())
     lt = ee.Algorithms.TemporalSegmentation.LandTrendr(**{
         'timeSeries': col.select(['seg'] + params['ltParams']['ftvBands']),
         'maxSegments': params['ltParams']['maxSegments'],
@@ -1251,6 +1254,7 @@ def runLt(params):  #exportTmComposites(params):
 
 
 def exportLt(params):
+    print('Exporting LandTrendr segmentation and FTV image array, please wait.')
     lt = runLt(params)
     years = ee.Image(lt).get('years').getInfo()
     yearsStr = ['yr_' + str(year) for year in years]
