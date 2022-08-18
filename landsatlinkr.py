@@ -16,13 +16,13 @@ def getPr(img):
     return path.cat(row)
 
 
-def _filterById(id, col):
+def filterById_doit(id, col):
   return ee.ImageCollection(col).filter(
       ee.Filter.neq('LANDSAT_SCENE_ID', ee.String(id)))
 
 
 def filterById(col, imgList):
-  return ee.ImageCollection(ee.List(imgList).iterate(_filterById, col))
+  return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col))
 
 
 def filterCol(col, params, wrs):
@@ -859,7 +859,7 @@ def processMssWrs1Imgs(params):
 #         'doyRange': params['doyRange']
 #     }).map(prepMss)
     
-#     mssCol1983 = (mssCol.map(_correctMssImg)
+#     mssCol1983 = (mssCol.map(correctMssImg_doit)
 #       .map(lambda img: img.resample('bicubic')))
     
 #     outImg = getMedoid(mssCol1983, ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca']) \
@@ -1042,7 +1042,7 @@ def exportMss2TmCoefCol(params):
     task.start()
     return task
 
-def _predictBand(sample, img, targetBand, outName):
+def predictBand_doit(sample, img, targetBand, outName):
   bands = ['green', 'red', 'red-edge', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']
   trainedClassifier = ee.Classifier.smileRandomForest(10).train(**{
     'features': sample,
@@ -1051,7 +1051,7 @@ def _predictBand(sample, img, targetBand, outName):
   }).setOutputMode('REGRESSION')
   return img.classify(trainedClassifier).rename(outName).round().toShort() 
 
-def _correctMssImg(img):
+def correctMssImg_doit(img):
   sample = ee.FeatureCollection(params['baseDir'] + '/mss_to_tm_coef_fc')
   targetBands = ['blue', 'green_1', 'red_1', 'nir_1', 'swir1', 'swir2', 'ndvi_1', 'tcb_1', 'tcg_1', 'tcw', 'tca_1'] #['blue', 'green_1', 'red_1', 'nir_1', 'ndvi_1', 'tcb_1', 'tcg_1', 'tca_1']
   outBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca'] # ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']
@@ -1060,7 +1060,7 @@ def _correctMssImg(img):
     #print(i)
     #print(targetBands[i])
     #print(outBands[i])
-    band = _predictBand(sample, img, targetBands[i], outBands[i])
+    band = predictBand_doit(sample, img, targetBands[i], outBands[i])
     bands.append(band)
 
   return ee.Image(bands).copyProperties(img, img.propertyNames())
@@ -1082,7 +1082,7 @@ def getFinalCorrectedMssCol(imgStackPath):
         imgList.append(img)
 
     return appendIdToBandnames(ee.ImageCollection(imgList)
-                               .map(_correctMssImg)
+                               .map(correctMssImg_doit)
                                .map(appendYearToBandnames)
                                .toBands())
 
@@ -1091,7 +1091,7 @@ def exportFinalCorrectedMssCol(params):
     print('Exporting annual MSS composites that match TM, please wait.')
     mssCol = mssStackToCol(params['baseDir'] + '/MSS_WRS1_to_WRS2_stack')
     outImg = appendIdToBandnames(mssCol
-                                 .map(_correctMssImg)
+                                 .map(correctMssImg_doit)
                                  .map(appendYearToBandnames)
                                  .toBands())
 
@@ -1489,7 +1489,7 @@ def rmMss2TmInfo(params):
   os.system(' '.join(['earthengine rm', os.path.join(params['baseDir'], 'mss_to_tm_coef_fc')]))
 #  os.system(' '.join(['earthengine rm', os.path.join(params['baseDir'], 'mss_offset')]))
 
-# def _images2Col(path, outCol):
+# def images2Col_doit(path, outCol):
 #   assets = ee.data.listAssets(params={'parent': path})['assets']
 #   for asset in assets:
 #     old = asset['name']
