@@ -1051,7 +1051,7 @@ def predictBand_doit(sample, img, targetBand, outName):
   }).setOutputMode('REGRESSION')
   return img.classify(trainedClassifier).rename(outName).round().toShort() 
 
-def correctMssImg_doit(img):
+def correctMssImgDoIt(img):
   sample = ee.FeatureCollection(params['baseDir'] + '/mss_to_tm_coef_fc')
   targetBands = ['blue', 'green_1', 'red_1', 'nir_1', 'swir1', 'swir2', 'ndvi_1', 'tcb_1', 'tcg_1', 'tcw', 'tca_1'] #['blue', 'green_1', 'red_1', 'nir_1', 'ndvi_1', 'tcb_1', 'tcg_1', 'tca_1']
   outBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca'] # ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']
@@ -1082,7 +1082,7 @@ def getFinalCorrectedMssCol(imgStackPath):
         imgList.append(img)
 
     return appendIdToBandnames(ee.ImageCollection(imgList)
-                               .map(correctMssImg_doit)
+                               .map(correctMssImgDoIt)
                                .map(appendYearToBandnames)
                                .toBands())
 
