@@ -1055,7 +1055,7 @@ def correctMssImg_buildit(params):
   #print('1055')
   #print('params', params)
   #print("params['baseDir'] + '/mss_to_tm_coef_fc'", params['baseDir'] + '/mss_to_tm_coef_fc')
-  return def correctMssImg_doit(img)
+  def correctMssImg_doit(img)
     sample = ee.FeatureCollection(params['baseDir'] + '/mss_to_tm_coef_fc')
     #print('1059')
     targetBands = ['blue', 'green_1', 'red_1', 'nir_1', 'swir1', 'swir2', 'ndvi_1', 'tcb_1', 'tcg_1', 'tcw', 'tca_1'] #['blue', 'green_1', 'red_1', 'nir_1', 'ndvi_1', 'tcb_1', 'tcg_1', 'tca_1']
@@ -1071,6 +1071,7 @@ def correctMssImg_buildit(params):
       bands[i] = band
 
     return ee.Image(bands).copyProperties(img, img.propertyNames())
+  return correctMssImg_doit
 
 
 def mssStackToCol(mssStackPath):
