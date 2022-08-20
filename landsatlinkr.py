@@ -1051,25 +1051,26 @@ def predictBand_doit(sample, img, targetBand, outName):
   }).setOutputMode('REGRESSION')
   return img.classify(trainedClassifier).rename(outName).round().toShort() 
 
-def correctMssImg_doit(img):
-  print('1055')
-  print('params', params)
-  print("params['baseDir'] + '/mss_to_tm_coef_fc'", params['baseDir'] + '/mss_to_tm_coef_fc')
-  sample = ee.FeatureCollection(params['baseDir'] + '/mss_to_tm_coef_fc')
-  print('1059')
-  targetBands = ['blue', 'green_1', 'red_1', 'nir_1', 'swir1', 'swir2', 'ndvi_1', 'tcb_1', 'tcg_1', 'tcw', 'tca_1'] #['blue', 'green_1', 'red_1', 'nir_1', 'ndvi_1', 'tcb_1', 'tcg_1', 'tca_1']
-  outBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca'] # ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']
-  # bands = []
-  bands = [None for b in range(0, len(outBands))]
-  for i in range(0, len(outBands)):
-    # print(i)
-    # print(targetBands[i])
-    print(outBands[i])
-    band = predictBand_doit(sample, img, targetBands[i], outBands[i])
-    # bands.append(band)
-    bands[i] = band
+def correctMssImg_buildit(params):
+  #print('1055')
+  #print('params', params)
+  #print("params['baseDir'] + '/mss_to_tm_coef_fc'", params['baseDir'] + '/mss_to_tm_coef_fc')
+  return def correctMssImg_doit(img)
+    sample = ee.FeatureCollection(params['baseDir'] + '/mss_to_tm_coef_fc')
+    #print('1059')
+    targetBands = ['blue', 'green_1', 'red_1', 'nir_1', 'swir1', 'swir2', 'ndvi_1', 'tcb_1', 'tcg_1', 'tcw', 'tca_1'] #['blue', 'green_1', 'red_1', 'nir_1', 'ndvi_1', 'tcb_1', 'tcg_1', 'tca_1']
+    outBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca'] # ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']
+    # bands = []
+    bands = [None for b in range(0, len(outBands))]
+    for i in range(0, len(outBands)):
+      # print(i)
+      # print(targetBands[i])
+      # print(outBands[i])
+      band = predictBand_doit(sample, img, targetBands[i], outBands[i])
+      # bands.append(band)
+      bands[i] = band
 
-  return ee.Image(bands).copyProperties(img, img.propertyNames())
+    return ee.Image(bands).copyProperties(img, img.propertyNames())
 
 
 def mssStackToCol(mssStackPath):
@@ -1080,22 +1081,23 @@ def mssStackToCol(mssStackPath):
         imgList.append(img)
     return ee.ImageCollection(imgList)
 
-def getFinalCorrectedMssCol(imgStackPath):
-    imgStack = ee.Image(imgStackPath)
-    imgList = []
-    for y in range(1972, 1984):
-        img = getImgYearFromStack(imgStack, y)
-        imgList.append(img)
-
-    return appendIdToBandnames(ee.ImageCollection(imgList)
-                               .map(correctMssImg_doit)
-                               .map(appendYearToBandnames)
-                               .toBands())
+# def getFinalCorrectedMssCol(imgStackPath):
+#     imgStack = ee.Image(imgStackPath)
+#     imgList = []
+#     for y in range(1972, 1984):
+#         img = getImgYearFromStack(imgStack, y)
+#         imgList.append(img)
+# 
+#     return appendIdToBandnames(ee.ImageCollection(imgList)
+#                                .map(correctMssImg_doit)
+#                                .map(appendYearToBandnames)
+#                                .toBands())
 
 
 def exportFinalCorrectedMssCol(params):
     print('Exporting annual MSS composites that match TM, please wait.')
     mssCol = mssStackToCol(params['baseDir'] + '/MSS_WRS1_to_WRS2_stack')
+    correctMssImg_doit = correctMssImg_buildit(params)
     outImg = appendIdToBandnames(mssCol
                                  .map(correctMssImg_doit)
                                  .map(appendYearToBandnames)
