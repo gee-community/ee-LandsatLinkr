@@ -1053,8 +1053,10 @@ def predictBand_doit(sample, img, targetBand, outName):
 
 def correctMssImg_doit(img):
   print('1055')
+  print('params', params)
+  print("params['baseDir'] + '/mss_to_tm_coef_fc'", params['baseDir'] + '/mss_to_tm_coef_fc')
   sample = ee.FeatureCollection(params['baseDir'] + '/mss_to_tm_coef_fc')
-  print('1057')
+  print('1059')
   targetBands = ['blue', 'green_1', 'red_1', 'nir_1', 'swir1', 'swir2', 'ndvi_1', 'tcb_1', 'tcg_1', 'tcw', 'tca_1'] #['blue', 'green_1', 'red_1', 'nir_1', 'ndvi_1', 'tcb_1', 'tcg_1', 'tca_1']
   outBands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca'] # ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']
   # bands = []
