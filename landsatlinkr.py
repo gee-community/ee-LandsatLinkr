@@ -1033,12 +1033,14 @@ def exportMss2TmCoefCol(params):
     print('Exporting MSS-to-TM model training sample, please wait.')
     col = getCoincidentTmMssCol(params)
     sample = col.map(getMsstoTmStratSamp).flatten()
+    outAsset = params['baseDir'] + '/mss_to_tm_coef_fc'
+    print(outAsset)
     task = ee.batch.Export.table.toAsset(**{
         'collection': sample,
         'description': 'mss_to_tm_coef_fc',
-        'assetId': params['baseDir'] + '/mss_to_tm_coef_fc'
+        'assetId': outAsset
     })
-    print('Exporting mss_to_tm_coef_fc')
+    
     task.start()
     return task
 
