@@ -588,10 +588,12 @@ def getRefImg(params):
 def exportMssRefImg(params):
     print('Exporting MSS 2nd Gen reference image, please wait.')
     refImg = getRefImg(params)
+    outAsset = params['baseDir'] + '/ref'
+    print(outAsset)
     task = ee.batch.Export.image.toAsset(**{
         'image': refImg,
         'description': 'MSS-reference-image',
-        'assetId': params['baseDir'] + '/ref',
+        'assetId': outAsset,
         'region': ee.Geometry(refImg.get('bounds')),
         'scale': 60,
         'crs': params['crs'],
