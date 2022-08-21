@@ -816,7 +816,7 @@ def processMssWrs1Imgs(params):
     
     imgs = []
     for y in range(1972, 1984):
-        print('Exporting year:', y)
+        print('Year:', y)
         yrCol = mssCol.filter(ee.Filter.eq('year', y))
         n_imgs = yrCol.size().getInfo()
         if (n_imgs == 0):
@@ -836,10 +836,12 @@ def processMssWrs1Imgs(params):
         imgs.append(yearImg)
 
     outImg = appendIdToBandnames(ee.ImageCollection(imgs).toBands())
+    outAsset = params['baseDir'] + '/MSS_WRS1_to_WRS2_stack'
+    print(outAsset)
     task = ee.batch.Export.image.toAsset(**{
         'image': outImg.clip(geom),
         'description': 'MSS_WRS1_to_WRS2_stack',
-        'assetId': params['baseDir'] + '/MSS_WRS1_to_WRS2_stack',
+        'assetId': outAsset,
         'region': geom,
         'scale': 60,
         'crs': params['crs']
