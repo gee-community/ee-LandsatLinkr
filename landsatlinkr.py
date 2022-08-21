@@ -1107,11 +1107,12 @@ def exportFinalCorrectedMssCol(params):
     granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     geom = ee.Feature(granuleGeom.get('granule')).geometry()
     
-    print('Exporting MSS to TM stack:')
+    outAsset = params['baseDir'] + '/WRS1_to_TM_stack'
+    print(outAsset)
     task = ee.batch.Export.image.toAsset(**{
         'image': outImg.resample('bicubic').clip(geom),
         'description': 'WRS1_to_TM_stack',
-        'assetId': params['baseDir'] + '/WRS1_to_TM_stack',
+        'assetId': outAsset,
         'region': geom,
         'scale': 30,
         'crs': params['crs'],
