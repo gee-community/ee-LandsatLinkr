@@ -1102,11 +1102,14 @@ def mssStackToCol(mssStackPath):
 
 
 def exportMssOffset(params):
+    # Create the MSS to TM correction function
+    correctMssImg_doit = correctMssImg_buildit(params)
+    # This calcs MSS offset from TM -to be mapped over collection
     def calc_offset(img):
         # Prep MSS
         mssImg = scaleMssToInt16(msslib['addTc'](msslib['addNdvi'](msslib['calcToa'](img))))
         # Match MSS to TM
-        mssImgToTm = ee.Image(correctMssImg_doit(xImg))
+        mssImgToTm = ee.Image(correctMssImg_doit(mssImg))
         # Prep TM
         tmImg = prepTm(ee.Image(mssImgToTm.get('coincidentTmMss')))
         # Calc difference and return the image
@@ -1114,8 +1117,7 @@ def exportMssOffset(params):
 
     # Get MSS / TM collection
     col = getCoincidentTmMssCol(params)
-    # Create the MSS to TM correction function
-    correctMssImg_doit = correctMssImg_buildit(params)
+
     # Map the offset function over the collection and get the median
     difCol = col.map(calc_offset).median().round().toShort()
 
