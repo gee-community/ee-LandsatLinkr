@@ -1102,6 +1102,7 @@ def mssStackToCol(mssStackPath):
 
 
 def exportMssOffset(params):
+    print('Exporting median MSS to TM offset, please wait.')
     # Create the MSS to TM correction function
     correctMssImg_doit = correctMssImg_buildit(params)
     # This calcs MSS offset from TM -to be mapped over collection
