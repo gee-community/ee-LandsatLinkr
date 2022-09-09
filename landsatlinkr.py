@@ -1076,7 +1076,12 @@ def correctMssImg_buildit(params):
       # bands.append(band)
       bands[i] = band
 
-    return ee.Image(bands).copyProperties(img, img.propertyNames())
+    outImg = ee.Image(bands)
+    if params['correctOffset']:
+      offset = ee.Image(params['baseDir'] + '/MSS_offset')
+      outImg = outImg.subtract(offset)
+
+    return outImg.copyProperties(img, img.propertyNames()) # TODO: only copy the properties needed
   return correctMssImg_doit
 
 
@@ -1150,17 +1155,20 @@ def exportFinalCorrectedMssCol(params):
                                  .map(appendYearToBandnames)
                                  .toBands())
 
+    if params['mssResample'] in ['bicubic', 'bilinear']:
+      outImg = outImg.resample(params['mssResample'])
+
     granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     geom = ee.Feature(granuleGeom.get('granule')).geometry()
-    
     outAsset = params['baseDir'] + '/WRS1_to_TM_stack'
     print(outAsset)
+
     task = ee.batch.Export.image.toAsset(**{
-        'image': outImg.resample('bicubic').clip(geom),
+        'image': outImg.clip(geom),
         'description': 'WRS1_to_TM_stack',
         'assetId': outAsset,
         'region': geom,
-        'scale': 30,
+        'scale': params['mssScale'],
         'crs': params['crs'],
         'maxPixels': 1e13
     })
