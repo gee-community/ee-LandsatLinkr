@@ -1057,7 +1057,7 @@ def predictBand_doit(sample, img, targetBand, outName):
   }).setOutputMode('REGRESSION')
   return img.classify(trainedClassifier).rename(outName).round().toShort() 
 
-def correctMssImg_buildit(params):
+def correctMssImg_buildit(params, correctOffset):
   #print('1055')
   #print('params', params)
   #print("params['baseDir'] + '/mss_to_tm_coef_fc'", params['baseDir'] + '/mss_to_tm_coef_fc')
@@ -1077,7 +1077,7 @@ def correctMssImg_buildit(params):
       bands[i] = band
 
     outImg = ee.Image(bands)
-    if params['correctOffset']:
+    if correctOffset:
       offset = ee.Image(params['baseDir'] + '/MSS_offset')
       outImg = outImg.subtract(offset)
 
@@ -1109,7 +1109,7 @@ def mssStackToCol(mssStackPath):
 def exportMssOffset(params):
     print('Exporting median MSS to TM offset, please wait.')
     # Create the MSS to TM correction function
-    correctMssImg_doit = correctMssImg_buildit(params)
+    correctMssImg_doit = correctMssImg_buildit(params, False)
     # This calcs MSS offset from TM -to be mapped over collection
     def calc_offset(img):
         # Prep MSS
@@ -1149,7 +1149,7 @@ def exportMssOffset(params):
 def exportFinalCorrectedMssCol(params):
     print('Exporting annual MSS composites that match TM, please wait.')
     mssCol = mssStackToCol(params['baseDir'] + '/MSS_WRS1_to_WRS2_stack')
-    correctMssImg_doit = correctMssImg_buildit(params)
+    correctMssImg_doit = correctMssImg_buildit(params, params['correctOffset'])
     outImg = appendIdToBandnames(mssCol
                                  .map(correctMssImg_doit)
                                  .map(appendYearToBandnames)
