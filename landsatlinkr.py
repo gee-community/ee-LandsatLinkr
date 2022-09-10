@@ -1137,7 +1137,7 @@ def exportMssOffset(params):
         'description': 'MSS_offset',
         'assetId': outAsset,
         'region': geom,
-        'scale': 60,
+        'scale': 30,
         'crs': params['crs'],
         'maxPixels': 1e13
     })
