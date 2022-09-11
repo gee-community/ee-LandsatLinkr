@@ -1176,30 +1176,30 @@ def exportFinalCorrectedMssCol(params):
     return task
 
 
-def exportMss1983(params):
-    aoi = ee.Feature(
-        msslib['getWrs1GranuleGeom'](params['wrs1']).get('granule')).geometry()
-    mssCol1983 = ee.ImageCollection(params['baseDir'] + '/mss_1983_col') \
-      .map(lambda img: img.resample('bicubic'))
+# def exportMss1983(params):
+#     aoi = ee.Feature(
+#         msslib['getWrs1GranuleGeom'](params['wrs1']).get('granule')).geometry()
+#     mssCol1983 = ee.ImageCollection(params['baseDir'] + '/mss_1983_col') \
+#       .map(lambda img: img.resample('bicubic'))
     
-    outImg = (getMedoid(mssCol1983, ['blue', 'green', 'red', 'nir', 'swir1', 'ndvi', 'tcb', 'tcg', 'tca'])  #['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']) \
-        .set({
-            'dummy': False,
-            'year': 1983,
-            'system:time_start': ee.Date.fromYMD(1983, 1, 1)
-        })).toShort().clip(aoi)
+#     outImg = (getMedoid(mssCol1983, ['blue', 'green', 'red', 'nir', 'swir1', 'ndvi', 'tcb', 'tcg', 'tca'])  #['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']) \
+#         .set({
+#             'dummy': False,
+#             'year': 1983,
+#             'system:time_start': ee.Date.fromYMD(1983, 1, 1)
+#         })).toShort().clip(aoi)
 
-    task = ee.batch.Export.image.toAsset(**{
-        'image': outImg,
-        'description': 'WRS1_to_TM' + '1983',
-        'assetId': params['baseDir'] + '/WRS1_to_TM/' + '1983',
-        'region': aoi,
-        'scale': 30,
-        'crs': params['crs'],
-        'maxPixels': 1e13
-    })
-    task.start()
-    return [task]
+#     task = ee.batch.Export.image.toAsset(**{
+#         'image': outImg,
+#         'description': 'WRS1_to_TM' + '1983',
+#         'assetId': params['baseDir'] + '/WRS1_to_TM/' + '1983',
+#         'region': aoi,
+#         'scale': 30,
+#         'crs': params['crs'],
+#         'maxPixels': 1e13
+#     })
+#     task.start()
+#     return [task]
 
 
 def runLt(params):  #exportTmComposites(params):
