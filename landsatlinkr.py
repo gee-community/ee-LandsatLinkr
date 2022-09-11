@@ -22,7 +22,7 @@ def filterById_doit(id, col):
 
 
 def filterById(col, imgList):
-  return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col))
+  return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col)) # TODO: use ee.Filter.inList().not()
 
 
 def filterCol(col, params, wrs):
