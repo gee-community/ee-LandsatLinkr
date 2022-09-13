@@ -22,7 +22,7 @@ def filterById_doit(id, col):
 
 
 def filterById(col, imgList):
-  return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col))
+  return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col)) # TODO: use ee.Filter.inList().not()
 
 
 def filterCol(col, params, wrs):
@@ -1057,7 +1057,7 @@ def predictBand_doit(sample, img, targetBand, outName):
   }).setOutputMode('REGRESSION')
   return img.classify(trainedClassifier).rename(outName).round().toShort() 
 
-def correctMssImg_buildit(params):
+def correctMssImg_buildit(params, correctOffset):
   #print('1055')
   #print('params', params)
   #print("params['baseDir'] + '/mss_to_tm_coef_fc'", params['baseDir'] + '/mss_to_tm_coef_fc')
@@ -1076,7 +1076,12 @@ def correctMssImg_buildit(params):
       # bands.append(band)
       bands[i] = band
 
-    return ee.Image(bands).copyProperties(img, img.propertyNames())
+    outImg = ee.Image(bands)
+    if correctOffset:
+      offset = ee.Image(params['baseDir'] + '/MSS_offset')
+      outImg = outImg.subtract(offset)
+
+    return outImg.copyProperties(img, img.propertyNames()) # TODO: only copy the properties needed
   return correctMssImg_doit
 
 
@@ -1101,23 +1106,35 @@ def mssStackToCol(mssStackPath):
 #                                .toBands())
 
 
-def exportFinalCorrectedMssCol(params):
-    print('Exporting annual MSS composites that match TM, please wait.')
-    mssCol = mssStackToCol(params['baseDir'] + '/MSS_WRS1_to_WRS2_stack')
-    correctMssImg_doit = correctMssImg_buildit(params)
-    outImg = appendIdToBandnames(mssCol
-                                 .map(correctMssImg_doit)
-                                 .map(appendYearToBandnames)
-                                 .toBands())
+def exportMssOffset(params):
+    print('Exporting median MSS to TM offset, please wait.')
+    # Create the MSS to TM correction function
+    correctMssImg_doit = correctMssImg_buildit(params, False)
+    # This calcs MSS offset from TM -to be mapped over collection
+    def calc_offset(img):
+        # Prep MSS
+        mssImg = scaleMssToInt16(msslib['addTc'](msslib['addNdvi'](msslib['calcToa'](img))))
+        # Match MSS to TM
+        mssImgToTm = ee.Image(correctMssImg_doit(mssImg))
+        # Prep TM
+        tmImg = prepTm(ee.Image(mssImgToTm.get('coincidentTmMss')))
+        # Calc difference and return the image
+        return mssImgToTm.subtract(tmImg)
+
+    # Get MSS / TM collection
+    col = getCoincidentTmMssCol(params)
+
+    # Map the offset function over the collection and get the median
+    difCol = col.map(calc_offset).median().round().toShort()
 
     granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     geom = ee.Feature(granuleGeom.get('granule')).geometry()
     
-    outAsset = params['baseDir'] + '/WRS1_to_TM_stack'
+    outAsset = params['baseDir'] + '/MSS_offset'
     print(outAsset)
     task = ee.batch.Export.image.toAsset(**{
-        'image': outImg.resample('bicubic').clip(geom),
-        'description': 'WRS1_to_TM_stack',
+        'image': difCol.clip(geom),
+        'description': 'MSS_offset',
         'assetId': outAsset,
         'region': geom,
         'scale': 30,
@@ -1128,30 +1145,61 @@ def exportFinalCorrectedMssCol(params):
     return task
 
 
-def exportMss1983(params):
-    aoi = ee.Feature(
-        msslib['getWrs1GranuleGeom'](params['wrs1']).get('granule')).geometry()
-    mssCol1983 = ee.ImageCollection(params['baseDir'] + '/mss_1983_col') \
-      .map(lambda img: img.resample('bicubic'))
-    
-    outImg = (getMedoid(mssCol1983, ['blue', 'green', 'red', 'nir', 'swir1', 'ndvi', 'tcb', 'tcg', 'tca'])  #['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']) \
-        .set({
-            'dummy': False,
-            'year': 1983,
-            'system:time_start': ee.Date.fromYMD(1983, 1, 1)
-        })).toShort().clip(aoi)
+
+def exportFinalCorrectedMssCol(params):
+    print('Exporting annual MSS composites that match TM, please wait.')
+    mssCol = mssStackToCol(params['baseDir'] + '/MSS_WRS1_to_WRS2_stack')
+    correctMssImg_doit = correctMssImg_buildit(params, params['correctOffset'])
+    outImg = appendIdToBandnames(mssCol
+                                 .map(correctMssImg_doit)
+                                 .map(appendYearToBandnames)
+                                 .toBands())
+
+    if params['mssResample'] in ['bicubic', 'bilinear']:
+      outImg = outImg.resample(params['mssResample'])
+
+    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    outAsset = params['baseDir'] + '/WRS1_to_TM_stack'
+    print(outAsset)
 
     task = ee.batch.Export.image.toAsset(**{
-        'image': outImg,
-        'description': 'WRS1_to_TM' + '1983',
-        'assetId': params['baseDir'] + '/WRS1_to_TM/' + '1983',
-        'region': aoi,
-        'scale': 30,
+        'image': outImg.clip(geom),
+        'description': 'WRS1_to_TM_stack',
+        'assetId': outAsset,
+        'region': geom,
+        'scale': params['mssScale'],
         'crs': params['crs'],
         'maxPixels': 1e13
     })
     task.start()
-    return [task]
+    return task
+
+
+# def exportMss1983(params):
+#     aoi = ee.Feature(
+#         msslib['getWrs1GranuleGeom'](params['wrs1']).get('granule')).geometry()
+#     mssCol1983 = ee.ImageCollection(params['baseDir'] + '/mss_1983_col') \
+#       .map(lambda img: img.resample('bicubic'))
+    
+#     outImg = (getMedoid(mssCol1983, ['blue', 'green', 'red', 'nir', 'swir1', 'ndvi', 'tcb', 'tcg', 'tca'])  #['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']) \
+#         .set({
+#             'dummy': False,
+#             'year': 1983,
+#             'system:time_start': ee.Date.fromYMD(1983, 1, 1)
+#         })).toShort().clip(aoi)
+
+#     task = ee.batch.Export.image.toAsset(**{
+#         'image': outImg,
+#         'description': 'WRS1_to_TM' + '1983',
+#         'assetId': params['baseDir'] + '/WRS1_to_TM/' + '1983',
+#         'region': aoi,
+#         'scale': 30,
+#         'crs': params['crs'],
+#         'maxPixels': 1e13
+#     })
+#     task.start()
+#     return [task]
 
 
 def runLt(params):  #exportTmComposites(params):
