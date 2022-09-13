@@ -1492,8 +1492,8 @@ def getPaths(project_dir, wrs_1_granule):
   #mss_wrs1_to_tm = os.path.join(base_dir, 'WRS1_to_TM')
   #post_mss = os.path.join(base_dir, 'post_mss')
   #collection = os.path.join(base_dir, 'collection')
-  mss_1983_col = os.path.join(base_dir, 'mss_1983_col')
-  fit_collection = os.path.join(base_dir, 'fit_collection')
+  #mss_1983_col = os.path.join(base_dir, 'mss_1983_col')
+  #fit_collection = os.path.join(base_dir, 'fit_collection')
   return {
       'wrs1_scene': base_dir,
       #'mss_wrs1_to_wrs2': mss_wrs1_to_wrs2,
@@ -1501,7 +1501,7 @@ def getPaths(project_dir, wrs_1_granule):
       #'post_mss': post_mss,
       #'collection': collection,
       #'mss_1983_col': mss_1983_col,
-      'fit_collection': fit_collection
+      #'fit_collection': fit_collection
   }
 
 def createProjectDir(project_dir, wrs_1_granule):
@@ -1512,7 +1512,7 @@ def createProjectDir(project_dir, wrs_1_granule):
   #os.system('earthengine create folder ' + paths['post_mss'])
   #os.system('earthengine create collection ' + paths['collection'])
   #os.system('earthengine create collection ' + paths['mss_1983_col'])
-  os.system('earthengine create collection ' + paths['fit_collection'])
+  #os.system('earthengine create collection ' + paths['fit_collection'])
 
 # def rmMssWrs1ToWrs2(params):
 #   paths = getPaths(params['projectDir'], params['wrs1'])
