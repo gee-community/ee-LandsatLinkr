@@ -538,8 +538,8 @@ def scaleMask(img):
 
 def viewWrs1Col(params):
     print('reload works')
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    params['aoi'] = ee.Geometry(granuleGeom.get('centroid'))
+    #granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    #params['aoi'] = params['aoi] # ee.Geometry(granuleGeom.get('centroid'))
     params['wrs'] = '1'
     mssDnCol = msslib['getCol'](params) \
         .filter(ee.Filter.eq('pr', params['wrs1']))
