@@ -1126,8 +1126,9 @@ def exportMssOffset(params):
     # Map the offset function over the collection and get the median
     difCol = col.map(calc_offset).median().round().toShort()
 
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    # granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    # geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    geom = params['aoi']
     
     outAsset = params['baseDir'] + '/MSS_offset'
     print(outAsset)
@@ -1157,8 +1158,9 @@ def exportFinalCorrectedMssCol(params):
     if params['mssResample'] in ['bicubic', 'bilinear']:
       outImg = outImg.resample(params['mssResample'])
 
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    # granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    # geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    geom = params['aoi']
     outAsset = params['baseDir'] + '/WRS1_to_TM_stack'
     print(outAsset)
 
@@ -1321,8 +1323,9 @@ def exportLt(params):
     lt = runLt(params)
     years = ee.Image(lt).get('years').getInfo()
     yearsStr = ['yr_' + str(year) for year in years]
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    # granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    # geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    geom = params['aoi']
 
     # tasks = []
     # for band in params['ltParams']['ftvBands']:
