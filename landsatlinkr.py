@@ -560,9 +560,10 @@ def getMedoid(col, bands, parallelScale=1):
             .select(bandsPos, bandNamesSub))
 
 def getRefImg(params):
-    granuleGeoms = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    centroid = ee.Geometry(granuleGeoms.get('centroid'))
-    bounds = ee.Geometry(granuleGeoms.get('bounds'))
+    #granuleGeoms = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    #centroid = ee.Geometry(granuleGeoms.get('centroid'))
+    #bounds = ee.ee.Geometry(granuleGeoms.get('bounds'))
+    bounds = params['aoi'].bounds()
 
     refCol = msslib['getCol']({
         'aoi': bounds,
@@ -583,7 +584,7 @@ def getRefImg(params):
     coincident = coincidentTmMssCol(refCol, tmCol).map(cloudMask)
     return msslib['addTc'](msslib['addNdvi'](getMedoid(coincident, ['green', 'red', 'red-edge', 'nir']))) \
         .select(['green', 'red', 'red-edge', 'nir', 'ndvi', 'tcb', 'tcg', 'tca']) \
-        .set('bounds', bounds)
+        #.set('bounds', bounds)
 
 def exportMssRefImg(params):
     print('Exporting MSS 2nd Gen reference image, please wait.')
@@ -594,7 +595,7 @@ def exportMssRefImg(params):
         'image': refImg,
         'description': 'MSS-reference-image',
         'assetId': outAsset,
-        'region': ee.Geometry(refImg.get('bounds')),
+        'region': params['aoi'].bounds(), #ee.Geometry(refImg.get('bounds')),
         'scale': 60,
         'crs': params['crs'],
         'maxPixels': 1e13
