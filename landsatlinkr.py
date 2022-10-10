@@ -960,8 +960,8 @@ def prepTm(img):
     return ee.Image(img.copyProperties(orig, orig.propertyNames())) # TODO: only copy the needed properties
 
 def getCoincidentTmMssCol(params):
-    aoi = ee.Feature(
-    msslib['getWrs1GranuleGeom'](params['wrs1']).get('granule')).geometry()
+    aoi = params['aoi'] #ee.Feature(
+    #msslib['getWrs1GranuleGeom'](params['wrs1']).get('granule')).geometry()
     mssCol = msslib['getCol']({
         'aoi': aoi,
         'wrs': '2',
