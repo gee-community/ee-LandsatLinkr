@@ -541,8 +541,8 @@ def viewWrs1Col(params):
     #granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     #params['aoi'] = params['aoi] # ee.Geometry(granuleGeom.get('centroid'))
     params['wrs'] = '1'
-    mssDnCol = msslib['getCol'](params) \
-        .filter(ee.Filter.eq('pr', params['wrs1']))
+    mssDnCol = msslib['getCol'](params) #\
+        #.filter(ee.Filter.eq('pr', params['wrs1']))
     msslib['viewThumbnails'](mssDnCol, None)
 
 def getMedoid(col, bands, parallelScale=1):
