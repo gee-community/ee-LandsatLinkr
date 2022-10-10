@@ -794,19 +794,17 @@ def scaleMssToInt16(img):
 # The export is a single image with bands for each image labeled by year and band name
 def processMssWrs1Imgs(params):
     print('Exporting annual MSS composites that match the MSS 2nd Gen reference image, please wait.')
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    geom = ee.Feature(granuleGeom.get('granule')).geometry()
-    params['aoi'] = ee.Geometry(granuleGeom.get('centroid'))
     params['wrs'] = '1'
 
     def setRefImg(img):
         return img.set('ref_img', ee.Image(params['baseDir'] + '/ref'))
 
-    mssCol = (msslib['getCol'](params)
-        .filter(ee.Filter.eq('pr', params['wrs1'])))
+    mssCol = msslib['getCol'](params)
+    if params['wrs1']:
+        mssCol = mssCol.filter(ee.Filter.inList('pr', params['wrs1']))
         
     mss1983 = msslib['getCol']({
-        'aoi': geom,
+        'aoi': params['aoi'],
         'wrs': '2',
         'yearRange': [1983, 1983],
         'doyRange': params['doyRange']
@@ -842,10 +840,10 @@ def processMssWrs1Imgs(params):
     outAsset = params['baseDir'] + '/MSS_WRS1_to_WRS2_stack'
     print(outAsset)
     task = ee.batch.Export.image.toAsset(**{
-        'image': outImg.clip(geom),
+        'image': outImg.clip(params['aoi']),
         'description': 'MSS_WRS1_to_WRS2_stack',
         'assetId': outAsset,
-        'region': geom,
+        'region': params['aoi'],
         'scale': 60,
         'crs': params['crs']
     })
