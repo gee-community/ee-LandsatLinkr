@@ -22,7 +22,7 @@ def getPr(img):
 
 
 def filterById(col, imgList):
-  return col.filter(ee.Filter.inList('LANDSAT_SCENE_ID', imgList).not())
+  return col.filter(ee.Filter.inList('LANDSAT_SCENE_ID', imgList).Not())
   # return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col))
 
 
