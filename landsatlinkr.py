@@ -16,13 +16,14 @@ def getPr(img):
     return path.cat(row)
 
 
-def filterById_doit(id, col):
-  return ee.ImageCollection(col).filter(
-      ee.Filter.neq('LANDSAT_SCENE_ID', ee.String(id)))
+# def filterById_doit(id, col):
+#   return ee.ImageCollection(col).filter(
+#       ee.Filter.neq('LANDSAT_SCENE_ID', ee.String(id)))
 
 
 def filterById(col, imgList):
-  return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col)) # TODO: use ee.Filter.inList().not()
+  return col.filter(ee.Filter.inList('LANDSAT_SCENE_ID', imgList).not())
+  # return ee.ImageCollection(ee.List(imgList).iterate(filterById_doit, col))
 
 
 def filterCol(col, params, wrs):
@@ -536,6 +537,7 @@ def scaleMask(img):
 
 
 def viewWrs1Col(params):
+    print('reload works')
     granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
     params['aoi'] = ee.Geometry(granuleGeom.get('centroid'))
     params['wrs'] = '1'
