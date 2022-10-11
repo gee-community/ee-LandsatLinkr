@@ -928,8 +928,8 @@ def tmAddIndices(img):
     return img.addBands(tc)
 
 def gatherTmCol(params):
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    aoi = ee.Feature(granuleGeom.get('granule')).geometry()
+    # granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    aoi = params['aoi'] # ee.Feature(granuleGeom.get('granule')).geometry()
     dateFilter = ee.Filter.calendarRange(params['doyRange'][0], params['doyRange'][1], 'day_of_year')
     startDate = ee.Date.fromYMD(params['yearRange'][0], 1, 1)
     endDate = startDate.advance(1, 'year')
@@ -1209,8 +1209,8 @@ def runLt(params):  #exportTmComposites(params):
       date = ee.Date(millis).format('YYYY-MM-dd')
       return img.set({'system:time_start': millis, 'date': date})
 
-    granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    geom = ee.Feature(granuleGeom.get('granule')).geometry()
+    # granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
+    # geom = ee.Feature(granuleGeom.get('granule')).geometry()
 
     mssCol = mssStackToCol(params['baseDir'] + '/WRS1_to_TM_stack').map(add_systime) # TODO: these images do not have a system:time_start - they should have one - should not need to add
     # for y in range(1972, 2022):
