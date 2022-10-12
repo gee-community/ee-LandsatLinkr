@@ -1226,7 +1226,7 @@ def runLt(params):  #exportTmComposites(params):
         params_ = copy.deepcopy(params)
         params_['yearRange'] = [year, year]
         bands = ['blue', 'green', 'red', 'nir', 'swir1', 'swir2', 'ndvi', 'tcb', 'tcg', 'tcw', 'tca']  # ['blue', 'green', 'red', 'nir', 'ndvi', 'tcb', 'tcg', 'tca'])
-        parallelScale = 8
+        parallelScale = 16
         tmCol = gatherTmCol(params_)
         date = ee.Date(ee.Date.fromYMD(year, 6 ,1).millis())        
         return ee.Image(ee.Algorithms.If(tmCol.size(), getMedoid(tmCol, bands, parallelScale), dummyImg)).set({
