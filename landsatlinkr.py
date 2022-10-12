@@ -943,21 +943,26 @@ def gatherTmCol(params):
         .filterBounds(aoi).filterDate(startDate, endDate).filter(dateFilter).map(prepTm)
     tm4Col = ee.ImageCollection('LANDSAT/LT04/C02/T1_L2') \
         .filterBounds(aoi).filterDate(startDate, endDate).filter(dateFilter).map(prepTm)
-    return ee.ImageCollection(ee.FeatureCollection([tm4Col, tm5Col, etmCol, oliCol, oli2Col]).flatten())
+    #return ee.ImageCollection(ee.FeatureCollection([tm4Col, tm5Col, etmCol, oliCol, oli2Col]).flatten())
+    return tm4Col.merge(tm5Col).merge(etmCol).merge(oliCol).merge(oli2Col)
 
 def prepOli(img):
-    orig = img
-    img = scaleMask(img)
-    img = renameOli(img)
-    img = tmAddIndices(img)
-    return ee.Image(img.copyProperties(orig, orig.propertyNames())) # TODO: only copy the needed properties
+    #orig = img
+    scaled = img.addBands(scaleMask(img), None, True).select(
+        ['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7'],  # , 'QA_PIXEL'
+        ['blue', 'green', 'red', 'nir', 'swir1', 'swir2']) # , 'pixel_qa']
+    #img = renameOli(img)
+    return tmAddIndices(scaled)
+    #return ee.Image(img.copyProperties(orig, orig.propertyNames())) # TODO: only copy the needed properties
 
 def prepTm(img):
-    orig = img
-    img = scaleMask(img)
-    img = renameTm(img)
-    img = tmAddIndices(img)
-    return ee.Image(img.copyProperties(orig, orig.propertyNames())) # TODO: only copy the needed properties
+    #orig = img
+    scaled = img.addBands(scaleMask(img), None, True).select(
+        ['SR_B1', 'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B7'], # , 'QA_PIXEL'
+        ['blue', 'green', 'red', 'nir', 'swir1', 'swir2'])
+    #img = renameTm(img)
+    return tmAddIndices(scaled)
+    #return ee.Image(img.copyProperties(orig, orig.propertyNames())) # TODO: only copy the needed properties
 
 def getCoincidentTmMssCol(params):
     aoi = params['aoi'] #ee.Feature(
