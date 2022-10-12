@@ -929,7 +929,7 @@ def tmAddIndices(img):
 
 def gatherTmCol(params):
     # granuleGeom = msslib['getWrs1GranuleGeom'](params['wrs1'])
-    aoi = params['aoi'] # ee.Feature(granuleGeom.get('granule')).geometry()
+    aoi = params['aoi'].bounds() # ee.Feature(granuleGeom.get('granule')).geometry()
     dateFilter = ee.Filter.calendarRange(params['doyRange'][0], params['doyRange'][1], 'day_of_year')
     startDate = ee.Date.fromYMD(params['yearRange'][0], 1, 1)
     endDate = startDate.advance(1, 'year')
@@ -943,8 +943,8 @@ def gatherTmCol(params):
         .filterBounds(aoi).filterDate(startDate, endDate).filter(dateFilter).map(prepTm)
     tm4Col = ee.ImageCollection('LANDSAT/LT04/C02/T1_L2') \
         .filterBounds(aoi).filterDate(startDate, endDate).filter(dateFilter).map(prepTm)
-    #return ee.ImageCollection(ee.FeatureCollection([tm4Col, tm5Col, etmCol, oliCol, oli2Col]).flatten())
-    return tm4Col.merge(tm5Col).merge(etmCol).merge(oliCol).merge(oli2Col)
+    return ee.ImageCollection(ee.FeatureCollection([tm4Col, tm5Col, etmCol, oliCol, oli2Col]).flatten())
+    #return tm4Col.merge(tm5Col).merge(etmCol).merge(oliCol).merge(oli2Col)
 
 def prepOli(img):
     #orig = img
@@ -1369,7 +1369,7 @@ def exportLt(params):
         'scale': params['ltParams']['scale'],
         'crs': params['crs'],
         'maxPixels': 1e13,
-        'shardSize': 16
+        'shardSize': 32
     })
     task.start()
     # tasks.append(task)
