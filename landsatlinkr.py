@@ -723,10 +723,10 @@ def correctMssImg2(img):
     breakNames = breakNames.map(lambda i: ee.String('tca_').cat(ee.String(i)))
 
     for i in range(0, len(breaks)+1):
-      if i is 0:
+      if i == 0:
         classImg = tcaMasked.where(
             tcaMasked.lt(tcaBreaks.getNumber(breakNames.get(i))), i)
-      elif i is len(breaks):
+      elif i == len(breaks):
         classImg = classImg.where(
             tcaMasked.gte(tcaBreaks.getNumber(breakNames.get(i-1))), i)
       else:
@@ -1007,10 +1007,10 @@ def getMsstoTmStratSamp(img):
     breakNames = breakNames.map(lambda i: ee.String('tca_').cat(ee.String(i)))
 
     for i in range(0, len(breaks)+1):
-      if i is 0:
+      if i == 0:
         classImg = tcaMasked.where(
             tcaMasked.lt(tcaBreaks.getNumber(breakNames.get(i))), i)
-      elif i is len(breaks):
+      elif i == len(breaks):
         classImg = classImg.where(
             tcaMasked.gte(tcaBreaks.getNumber(breakNames.get(i-1))), i)
       else:
